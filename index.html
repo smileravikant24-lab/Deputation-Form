@@ -202,12 +202,12 @@
             <div id="mobileErr" class="error hidden">Please enter a valid 10-digit mobile number.</div>
           </div>
           <div>
-            <label class="req">Email (@cag.gov.in)</label>
+            <label class="req">Email (@cag.gov.in / @nic.in / @gmail.com)</label>
             <div style="display:flex; gap:8px; align-items:center;">
-              <input type="email" id="email" placeholder="name@cag.gov.in" required style="flex-grow: 1;">
+              <input type="email" id="email" placeholder="name@cag.gov.in or Gmail" required style="flex-grow: 1;">
               <button type="button" id="sendEmailOtpBtn" class="btn-secondary" style="flex: 0 0 auto;">Send OTP</button>
             </div>
-            <div id="emailErr" class="error hidden">Please enter a valid @cag.gov.in email.</div>
+            <div id="emailErr" class="error hidden">Please enter a valid @cag.gov.in, @nic.in or @gmail.com email.</div>
             <div id="emailStatus" class="muted" style="margin-top: 4px;"></div>
             <div id="emailOtpSection" class="hidden" style="margin-top: 10px;">
               <label class="req">Enter OTP from Email</label>
@@ -966,8 +966,8 @@
 
       sendEmailOtpBtn.addEventListener('click', () => {
         const email = emailInput.value.trim().toLowerCase();
-        if (!/^[\w.-]+@cag\.gov\.in$/i.test(email)) {
-          emailErr.textContent = 'Please enter a valid @cag.gov.in email.';
+        if (!/^[\w.-]+@(cag\.gov\.in|nic\.in|gov\.in|gmail\.com)$/i.test(email)) {
+          emailErr.textContent = 'Please enter a valid @cag.gov.in, @nic.in or @gmail.com email.';
           emailErr.classList.remove('hidden');
           return;
         }
@@ -1041,7 +1041,7 @@
       depForm.addEventListener('submit', async(e) => {
           e.preventDefault();
           if(!isEmailVerified || !emailVerifyToken){
-            document.getElementById('emailStatus').innerHTML = '<span style="color:#dc2626;">Please verify your @cag.gov.in email via OTP before submitting.</span>';
+            document.getElementById('emailStatus').innerHTML = '<span style="color:#dc2626;">Please verify your email via OTP before submitting.</span>';
             return;
           }
           if(!depForm.checkValidity()){
