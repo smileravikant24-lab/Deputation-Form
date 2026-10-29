@@ -4,6 +4,9 @@
   <base target="_top">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Deputation Form - SAO</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style>
@@ -747,12 +750,12 @@
       setToday('asOnDate');
 
       function updateExamOptions() {
-        const allExamSelects = document.querySelectorAll('#examContainer .dynamic-select');
+        const allExamSelects = Array.from(document.querySelectorAll('#examContainer .dynamic-select'));
         const selectedExams = new Set();
 
         // 1. Gather all selected non-'Other' exams
         allExamSelects.forEach(sel => {
-          const val = sel.value;
+          const val = (sel.value || '').trim();
           if (val && val !== 'Other') {
             selectedExams.add(val);
           }
@@ -760,25 +763,35 @@
 
         // 2. Re-render options for each exam dropdown
         allExamSelects.forEach(sel => {
-          const currentVal = sel.value;
-          sel.innerHTML = '<option value="">-- Select --</option>';
+          const currentVal = (sel.value || '').trim();
+          sel.innerHTML = '';
+
+          const defOpt = document.createElement('option');
+          defOpt.value = '';
+          defOpt.textContent = '-- Select --';
+          if (!currentVal) defOpt.selected = true;
+          sel.appendChild(defOpt);
 
           EXAMS_LIST.forEach(exam => {
-            // Include option if:
-            // - It is currently selected in THIS dropdown, OR
-            // - It is not selected in any other dropdown, OR
-            // - It is 'Other' (which can be chosen multiple times with different custom names)
-            if (exam === currentVal || !selectedExams.has(exam) || exam === 'Other') {
+            const isCurrent = (exam === currentVal);
+            const isAvailable = !selectedExams.has(exam);
+            const isOther = (exam === 'Other');
+
+            // Include only if currently chosen in THIS dropdown, or not selected elsewhere, or 'Other'
+            if (isCurrent || isAvailable || isOther) {
               const opt = document.createElement('option');
               opt.value = exam;
               opt.textContent = exam;
-              if (exam === currentVal) opt.selected = true;
+              if (isCurrent) opt.selected = true;
               sel.appendChild(opt);
             }
           });
+
+          // Ensure value is explicitly preserved
+          sel.value = currentVal;
         });
 
-        // 3. Informative tooltip on + Add Exam button
+        // 3. Update + Add Exam button tooltip
         const addBtn = document.getElementById('addExam');
         const remainingCount = EXAMS_LIST.filter(e => e !== 'Other' && !selectedExams.has(e)).length;
         if (addBtn) {
@@ -791,33 +804,48 @@
       }
 
       function addRow(containerId, isExam=false){
-         const wrap=document.createElement('div');wrap.className='rowline';
-         const sel=document.createElement('select');
-         const opts = isExam ? EXAMS_LIST : EXP_CATEGORIES;
-         renderOptions(sel, opts, false);
-         sel.insertAdjacentHTML('afterbegin','<option value="">-- Select --</option>');
+         const wrap = document.createElement('div');
+         wrap.className = 'rowline';
+         const sel = document.createElement('select');
          sel.style.flex = "1";
          sel.className = 'dynamic-select';
+         sel.required = true;
+
+         if (isExam) {
+             // CRITICAL FIX: Start strictly with '-- Select --' and value = ''
+             // Never pre-populate with first item from EXAMS_LIST
+             sel.innerHTML = '<option value="" selected>-- Select --</option>';
+             sel.value = '';
+         } else {
+             renderOptions(sel, EXP_CATEGORIES, true);
+             sel.value = '';
+         }
+
          let inp;
-         if(isExam) {
+         if (isExam) {
              inp = document.createElement('select');
              renderOptions(inp, YEAR_OPTIONS, true);
              inp.style.flex = "1";
              inp.className = 'exam-year';
+             inp.required = true;
          } else {
-             inp=document.createElement('input'); inp.type='text'; inp.placeholder='Details';
+             inp = document.createElement('input');
+             inp.type = 'text';
+             inp.placeholder = 'Details';
              inp.style.flex = "2";
              inp.className = 'exp-detail';
+             inp.required = true;
          }
+
          let otherInp = null;
-         if(isExam) {
+         if (isExam) {
              otherInp = document.createElement('input');
-             otherInp.type='text';
-             otherInp.placeholder='Specify Exam Name';
+             otherInp.type = 'text';
+             otherInp.placeholder = 'Specify Exam Name';
              otherInp.className = 'exam-other hidden';
              otherInp.style.flex = "1";
              sel.addEventListener('change', function() {
-                 if(this.value === 'Other') {
+                 if (this.value === 'Other') {
                      otherInp.classList.remove('hidden');
                      otherInp.required = true;
                  } else {
@@ -828,16 +856,23 @@
                  updateExamOptions();
              });
          }
-         const btn=document.createElement('button');btn.type='button';btn.className='remove';btn.textContent='X';
-         btn.onclick=()=>{
+
+         const btn = document.createElement('button');
+         btn.type = 'button';
+         btn.className = 'remove';
+         btn.textContent = 'X';
+         btn.onclick = () => {
              wrap.remove();
-             if(isExam) updateExamOptions();
+             if (isExam) updateExamOptions();
          };
+
          wrap.append(sel);
-         if(otherInp) wrap.append(otherInp);
+         if (otherInp) wrap.append(otherInp);
          wrap.append(inp, btn);
          document.getElementById(containerId).appendChild(wrap);
-         if(isExam) updateExamOptions();
+
+         // Populate available unselected options dynamically
+         if (isExam) updateExamOptions();
       }
 
       window.addRow = addRow;
