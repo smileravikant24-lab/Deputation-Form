@@ -8,7 +8,6 @@ const HEADERS = [
 
   'Year of Passing SOG Exam',
   'Departmental Exams (JSON)',
-  'Date of promotion/appointment as AAO',
   'Date of promotion/appointment as SAO',
 
   'As on Date', 'Years completed in the grade',
@@ -48,11 +47,11 @@ function doGet(e) {
 
   try {
     return HtmlService.createTemplateFromFile('Index').evaluate()
-      .setTitle('Deputation Form')
+      .setTitle('Deputation Form - SAO')
       .addMetaTag('viewport', 'width=device-width, initial-scale=1')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   } catch (err) {
-    return HtmlService.createHtmlOutput("<h3 style='font-family:sans-serif; text-align:center;'>Deputation Form API Ready. Access via GitHub Pages frontend.</h3>");
+    return HtmlService.createHtmlOutput("<h3 style='font-family:sans-serif; text-align:center;'>Deputation Form API Ready (SAO Cadre). Access via GitHub Pages frontend.</h3>");
   }
 }
 
@@ -121,11 +120,11 @@ function sendEmailOTP(email) {
   const cache = CacheService.getScriptCache();
   cache.put('email_otp_' + email.toLowerCase(), otp, 600);
 
-  const subject = 'Your OTP for Deputation Form (SAO/AAO)';
+  const subject = 'Your OTP for Deputation Form (SAO)';
   const body = `<p>Dear Applicant,</p><p>Your One-Time Password (OTP) is: <strong>${otp}</strong></p><p>This OTP is valid for 10 minutes.</p><p>Regards,<br>IA&AD Admin</p>`;
   
   try {
-    MailApp.sendEmail({ to: email, subject: subject, htmlBody: body, name: 'Deputation Form AAO/SAO' });
+    MailApp.sendEmail({ to: email, subject: subject, htmlBody: body, name: 'Deputation Form SAO' });
     return { ok: true, message: `OTP sent successfully to ${email}` };
   } catch (error) {
     Logger.log('Email sending failed: ' + error.toString());
@@ -158,10 +157,8 @@ function saveForm(payload) {
     if (!payload.photo || !payload.photo.content) throw new Error('Photo is required.');
     if (!payload.signature || !payload.signature.content) throw new Error('Signature is required.');
 
-    const designation = payload.designation;
-    let gradeDate = null;
-    if (designation === 'SAO') gradeDate = payload.dateSAO ? new Date(payload.dateSAO) : null;
-    else if (designation === 'AAO') gradeDate = payload.dateAAO ? new Date(payload.dateAAO) : null;
+    const designation = 'SAO';
+    const gradeDate = payload.dateSAO ? new Date(payload.dateSAO) : null;
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let sheet = ss.getSheetByName(SHEET_NAME);
@@ -173,9 +170,7 @@ function saveForm(payload) {
     const dob = payload.dob ? new Date(payload.dob) : null;
     const ageYears = dob ? yearsBetween_(dob, asOn) : '';
     const yearsInGrade = gradeDate ? yearsBetween_(gradeDate, asOn) : '';
-    if (designation === 'AAO' && (yearsInGrade === '' || yearsInGrade < 5)) {
-        throw new Error('Eligibility Error: Minimum 5 years of service in AAO grade is required.');
-    }
+
     const recordId = 'REC-SAO-' + Math.floor(now.getTime() / 1000);
     const folder = DriveApp.getFolderById(getOrCreateUploadsFolderId_());
     const saveFile = (data, prefix) => {
@@ -188,14 +183,13 @@ function saveForm(payload) {
     const sigFile = saveFile(payload.signature, 'Sig');
 
     const row = [
-      now, payload.name, payload.designation, payload.stream, payload.gender, "'" + payload.mobile, payload.email,
+      now, payload.name, designation, payload.stream, payload.gender, "'" + payload.mobile, payload.email,
       payload.dob, ageYears, payload.location, payload.qualEducational, payload.qualProfessional,
       payload.parentOffice, payload.presentOffice, payload.presentOfficeOther,
       payload.scst, payload.category, payload.entryGovt, payload.entryIAAD,
 
       payload.sogYear || '',
       JSON.stringify(payload.exams || []), 
-      payload.dateAAO || '',
       payload.dateSAO || '',
 
       payload.asOnDate, yearsInGrade,
@@ -288,7 +282,7 @@ function createPdf_(d, refId, dateObj, photoFile, sigFile, folder, age, yearsInG
       <div class="pv-header">
         <div>
           <h2>DEPUTATION APPLICATION FORM</h2>
-          <div class="pv-sub">SAO / AAO Cadre</div>
+          <div class="pv-sub">SAO Cadre</div>
         </div>
         <div class="pv-photo-box">
           <img src="data:${photoMime};base64,${photoB64}">
@@ -301,7 +295,7 @@ function createPdf_(d, refId, dateObj, photoFile, sigFile, folder, age, yearsInG
       <div class="pv-section">
         <div class="pv-sec-title">Part 1: Common Details</div>
         ${rowHtml('Name', d.name)}
-        ${rowHtml('Designation', d.designation)}
+        ${rowHtml('Designation', 'SAO')}
         ${rowHtml('Stream', d.stream)}
         ${rowHtml('Gender', d.gender)}
         ${rowHtml('Mobile', d.mobile)}
@@ -319,11 +313,10 @@ function createPdf_(d, refId, dateObj, photoFile, sigFile, folder, age, yearsInG
         ${rowHtml('Date Entry IA&AD', formatDate(d.entryIAAD))}
       </div>
       <div class="pv-section">
-        <div class="pv-sec-title">Part 2: For SAO / AAO</div>
+        <div class="pv-sec-title">Part 2: Service Details (SAO)</div>
         ${rowHtml('Year of passing SOG', d.sogYear)}
         ${rowHtml('Departmental Exams', examsHtml)}
-        ${rowHtml('Date of promotion as AAO', formatDate(d.dateAAO))}
-        ${d.designation === 'SAO' ? rowHtml('Date of promotion as SAO', formatDate(d.dateSAO)) : ''}
+        ${rowHtml('Date of promotion as SAO', formatDate(d.dateSAO))}
         ${rowHtml('As on Date', formatDate(d.asOnDate))}
         ${rowHtml('Years in Grade', yearsInGrade)}
         ${rowHtml('Present Pay Level', 'Level ' + d.payLevel)}
@@ -357,7 +350,7 @@ function createPdf_(d, refId, dateObj, photoFile, sigFile, folder, age, yearsInG
     </html>`;
 
   const blob = Utilities.newBlob(html, MimeType.HTML).getAs(MimeType.PDF);
-  blob.setName(`${d.name} - Deputation Form (SAO_AAO) Receipt.pdf`);
+  blob.setName(`${d.name} - Deputation Form (SAO) Receipt.pdf`);
   const file = folder.createFile(blob);
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return file.getUrl();

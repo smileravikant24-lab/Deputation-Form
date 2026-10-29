@@ -1,13 +1,13 @@
-# Deputation Application Form (SAO / AAO Cadre)
+# Deputation Application Form (SAO Cadre)
 
-Official online deputation registration portal for SAO/AAO cadre with email OTP verification, file uploads (Photo & Signature), automated Google Sheets recording, and dynamic PDF generation.
+Official online deputation registration portal for Senior Audit Officer (SAO) cadre with email OTP verification, file uploads (Photo & Signature), automated Google Sheets recording, and dynamic PDF generation.
 
 ---
 
 ## 🚀 Quick Setup & Deployment Guide
 
 ### Step 1: Google Apps Script Backend Setup
-1. Create a new Google Spreadsheet in your Google Drive (e.g. named `Deputation Form SAO-AAO`).
+1. Create a new Google Spreadsheet in your Google Drive (e.g. named `Deputation Form SAO`).
 2. Go to **Extensions** > **Apps Script**.
 3. Replace the code in `Code.gs` with the content of [`Code.gs`](Code.gs).
 4. Run the `setup()` function once to create the necessary sheet (`Dep Form New Delhi`) and headers, and grant required permissions.
@@ -16,7 +16,7 @@ Official online deputation registration portal for SAO/AAO cadre with email OTP 
 1. Click **Deploy** > **New deployment**.
 2. Select type: **Web app**.
 3. Set:
-   - **Description**: `Deputation Form v1`
+   - **Description**: `Deputation Form SAO v1`
    - **Execute as**: `Me`
    - **Who has access**: `Anyone` (CRITICAL for GitHub Pages access)
 4. Click **Deploy** and copy the generated **Web App URL** (e.g., `https://script.google.com/macros/s/AKfycb.../exec`).
