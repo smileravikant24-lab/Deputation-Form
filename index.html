@@ -30,6 +30,7 @@
     button:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
     button[disabled] { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
     .btn-secondary { background: #8b5cf6; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+    .btn-new { background: #4f46e5; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
     .rowline { display:flex; gap:8px; align-items:center; flex-wrap: wrap; margin-bottom: 8px; }
     .rowline > * { flex: 1; }
     .rowline .remove { flex: 0 0 auto; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; }
@@ -42,6 +43,11 @@
     .ss-option:hover { background: #f0f4ff; }
     .toast { position: fixed; top: 24px; right: 24px; background: #10b981; color: #fff; padding: 14px 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(16,185,129,0.3); opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; z-index: 99999; font-weight: 600; }
     .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* File preview card */
+    .file-preview { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: #f3f4f6; border: 1px dashed #cbd5e1; border-radius: 8px; margin-top: 8px; }
+    .file-preview img { width: 44px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #d1d5db; background: #fff; }
+    .file-preview .sig-thumb { height: 35px; width: 70px; object-fit: contain; }
 
     /* ===== SAVING PROGRESS OVERLAY ===== */
     #savingOverlay {
@@ -172,7 +178,7 @@
       <fieldset>
         <legend>Part 1: Common Details</legend>
         <div class="group">
-          <div><label class="req">Name</label><input type="text" id="name" required></div>
+          <div><label class="req">Name</label><input type="text" id="name" required placeholder="Full Name as per official records"></div>
           <div>
             <label class="req">Designation</label>
             <select id="designation" required>
@@ -189,7 +195,7 @@
           </div>
           <div>
             <label class="req">Mobile Number</label>
-            <input type="tel" id="mobile" inputmode="numeric" maxlength="10" placeholder="10 digits" required>
+            <input type="tel" id="mobile" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" required>
             <div id="mobileErr" class="error hidden">Please enter a valid 10-digit mobile number.</div>
           </div>
           <div>
@@ -210,10 +216,10 @@
             </div>
           </div>
           <div><label class="req">Date of Birth</label><input type="date" id="dob" required></div>
-          <div><label>Age (years)</label><input type="text" id="age" readonly></div>
+          <div><label>Age (years)</label><input type="text" id="age" readonly placeholder="Auto-calculated"></div>
           <div><label class="req">Location for Deputation</label><select id="location" required></select></div>
-          <div><label class="req">Qualification - Educational</label><input type="text" id="qualEducational" placeholder="e.g., B.Com, M.Com" required></div>
-          <div><label>Qualification - Professional</label><input type="text" id="qualProfessional" placeholder="e.g., CA, ICWA, etc."></div>
+          <div><label class="req">Qualification - Educational</label><input type="text" id="qualEducational" placeholder="e.g., B.Com, M.Com, Graduate" required></div>
+          <div><label>Qualification - Professional</label><input type="text" id="qualProfessional" placeholder="e.g., CA, ICWA, CISA, etc."></div>
           <div>
             <label class="req">Parent Office</label>
             <div class="search-select">
@@ -233,7 +239,7 @@
           </div>
           <div id="presentOfficeOtherWrap" class="hidden">
             <label class="req">Present Office (Other)</label>
-            <input type="text" id="presentOfficeOther" placeholder="Please specify">
+            <input type="text" id="presentOfficeOther" placeholder="Please specify your office">
           </div>
           <div>
             <label class="req">SC/ST</label>
@@ -273,9 +279,9 @@
             <div id="examErr" class="error hidden">Please add at least one exam.</div>
           </div>
           <div><label>As on Date</label><input type="date" id="asOnDate" readonly></div>
-          <div><label>Number of years completed in the grade</label><input type="text" id="yearsInGrade" readonly></div>
+          <div><label>Number of years completed in the grade</label><input type="text" id="yearsInGrade" readonly placeholder="Auto-calculated"></div>
           <div><label class="req">Present Pay Level</label><select id="payLevel" required></select></div>
-          <div><label class="req">Pay Amount</label><input type="number" id="payAmount" min="0" max="999999" required></div>
+          <div><label class="req">Pay Amount (Basic)</label><input type="number" id="payAmount" min="0" max="999999" placeholder="Enter basic pay amount" required></div>
           <div class="span-2">
             <label class="req">Working experience and posts held</label>
             <div id="expContainer"></div>
@@ -283,15 +289,15 @@
           </div>
           <div>
             <label class="req">Merit</label><div class="inline"><label><input type="radio" name="merit" value="Yes" required> Yes</label><label><input type="radio" name="merit" value="No" required> No</label></div>
-            <div id="meritDetailsWrap" class="hidden"><label class="req">Merit Details</label><textarea id="meritDetails" rows="3" maxlength="2000"></textarea></div>
+            <div id="meritDetailsWrap" class="hidden"><label class="req">Merit Details</label><textarea id="meritDetails" rows="3" maxlength="2000" placeholder="Provide merit details"></textarea></div>
           </div>
           <div>
             <label class="req">Achievements</label><div class="inline"><label><input type="radio" name="achievements" value="Yes" required> Yes</label><label><input type="radio" name="achievements" value="No" required> No</label></div>
-            <div id="achievementsDetailsWrap" class="hidden"><label class="req">Achievements Details</label><textarea id="achievementsDetails" rows="3" maxlength="2000"></textarea></div>
+            <div id="achievementsDetailsWrap" class="hidden"><label class="req">Achievements Details</label><textarea id="achievementsDetails" rows="3" maxlength="2000" placeholder="Provide achievements details"></textarea></div>
           </div>
           <div>
             <label class="req">Other Info</label><div class="inline"><label><input type="radio" name="otherInfo" value="Yes" required> Yes</label><label><input type="radio" name="otherInfo" value="No" required> No</label></div>
-            <div id="otherInfoDetailsWrap" class="hidden"><label class="req">Other Info Details</label><textarea id="otherInfoDetails" rows="3" maxlength="2000"></textarea></div>
+            <div id="otherInfoDetailsWrap" class="hidden"><label class="req">Other Info Details</label><textarea id="otherInfoDetails" rows="3" maxlength="2000" placeholder="Provide other relevant details"></textarea></div>
           </div>
         </div>
       </fieldset>
@@ -302,19 +308,33 @@
           <div>
             <label class="req">Passport Size Photo (≤ 100 KB)</label>
             <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 6px;">
-              <input type="file" id="photo" accept="image/*" required style="flex: 1;">
+              <input type="file" id="photo" accept="image/jpeg,image/png,image/jpg" required style="flex: 1;">
               <button type="button" onclick="document.getElementById('photo').click()" style="background: #6b7280; flex: 0 0 auto; padding: 8px 14px;">Browse</button>
             </div>
-            <small class="muted">File name must be 'Photo'</small>
+            <div id="photoPreviewWrap" class="file-preview hidden">
+              <img id="photoThumb" src="" alt="Photo Preview">
+              <div>
+                <strong id="photoFileName" style="font-size:12px; color:#111827;">Photo</strong>
+                <div id="photoFileSize" style="font-size:11px; color:#6b7280;"></div>
+              </div>
+            </div>
+            <small class="muted">File name must be 'Photo' (JPG/PNG, max 100 KB)</small>
             <div id="photoErr" class="error hidden">Please upload an image ≤ 100 KB.</div>
           </div>
           <div>
             <label class="req">Signature (≤ 100 KB)</label>
             <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 6px;">
-              <input type="file" id="signature" accept="image/*" required style="flex: 1;">
+              <input type="file" id="signature" accept="image/jpeg,image/png,image/jpg" required style="flex: 1;">
               <button type="button" onclick="document.getElementById('signature').click()" style="background: #6b7280; flex: 0 0 auto; padding: 8px 14px;">Browse</button>
             </div>
-            <small class="muted">File name must be 'Signature'</small>
+            <div id="sigPreviewWrap" class="file-preview hidden">
+              <img id="sigThumb" class="sig-thumb" src="" alt="Signature Preview">
+              <div>
+                <strong id="sigFileName" style="font-size:12px; color:#111827;">Signature</strong>
+                <div id="sigFileSize" style="font-size:11px; color:#6b7280;"></div>
+              </div>
+            </div>
+            <small class="muted">File name must be 'Signature' (JPG/PNG, max 100 KB)</small>
             <div id="signatureErr" class="error hidden">Please upload an image ≤ 100 KB.</div>
           </div>
           <div class="span-2">
@@ -325,20 +345,22 @@
 
       <div style="text-align:center; margin-top:20px;">
         <button type="submit" id="submitBtn" disabled>Submit Application</button>
-        <div id="status"></div>
+        <div id="status" style="margin-top:12px; font-weight:600;"></div>
       </div>
     </form>
   </div>
 
+  <!-- PRINT / RECEIPT VIEW -->
   <div id="printView" class="hidden">
     <div class="pv-banner no-print">
       <div>
         <h3 style="color:#15803d; margin:0 0 8px; font-weight:700;">Application Submitted Successfully! 🎉</h3>
         <p style="margin:0; color:#0c4a6e;">Your application has been recorded. Please download or print this receipt.</p>
       </div>
-      <div style="display:flex; gap:12px; justify-content:center;">
+      <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap;">
         <a id="downloadPdfBtn" href="#" target="_blank" style="background:#10b981; color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700;">📄 Download PDF</a>
         <button type="button" onclick="window.print()" style="background:#0284c7; color:#fff; padding:12px 24px; border:none; border-radius:8px; cursor:pointer;">🖨️ Print</button>
+        <button type="button" id="newEntryBtn" onclick="resetFormForNewEntry()" class="btn-new" style="color:#fff; padding:12px 24px; border:none; border-radius:8px; cursor:pointer; font-weight:700;">➕ New Application</button>
       </div>
     </div>
     <div class="pv-header">
@@ -348,7 +370,7 @@
        </div>
        <div class="pv-photo-box">
           <p style="margin:0 0 4px; font-size:10px;">Applicant Photo</p>
-          <img id="pv-photo" src="">
+          <img id="pv-photo" src="" alt="Photo">
        </div>
     </div>
     <div class="pv-meta-strip">
@@ -358,9 +380,12 @@
     <div id="pv-content"></div>
     <div class="pv-footer">
       <div class="pv-sig-box">
-        <img id="pv-sig" src="">
+        <img id="pv-sig" src="" alt="Signature">
         <p>Signature</p>
       </div>
+    </div>
+    <div class="no-print" style="text-align:center; margin-top:25px; padding-top:20px; border-top:1px dashed #e5e7eb;">
+      <button type="button" onclick="resetFormForNewEntry()" class="btn-new" style="padding:12px 28px; border-radius:8px; font-size:14px; font-weight:700;">➕ Fill New Application</button>
     </div>
     <div style="text-align:center; font-size:11px; color:#9ca3af; margin-top:20px;">System Generated Receipt</div>
   </div>
@@ -370,8 +395,6 @@
   <script>
     // =========================================================================
     // ⚙️ GOOGLE APPS SCRIPT WEB APP URL
-    // Replace with your deployed Web App URL (Execute as: Me, Access: Anyone)
-    // Example: "https://script.google.com/macros/s/AKfycb.../exec"
     // =========================================================================
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwojSdOXvArDE51FqUMgyVhyPtWQabiOxdC5du4PYFe6f0VfK4ncJGOCPdnlA-jAvqe/exec";
 
@@ -446,7 +469,19 @@
     const YEAR_OPTIONS=Array.from({length:currentYear - 1949},(_,i)=>String(currentYear - i));
 
     let isEmailVerified = false;
+    let emailVerifyToken = '';
     let otpTimer = null;
+
+    // Helper: HTML Sanitizer to prevent XSS
+    function esc(s) {
+      if (s === null || s === undefined) return '';
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
 
     // ===== PROGRESS OVERLAY CONTROLS =====
     const overlay = document.getElementById('savingOverlay');
@@ -542,10 +577,10 @@
       setTimeout(() => hideProgress(), 1800);
     }
 
-    function markError() {
+    function markError(customMsg) {
       if (progressInterval) clearInterval(progressInterval);
-      savingTitle.textContent = 'Submission Failed';
-      savingSubtitle.textContent = 'Please try again.';
+      savingTitle.textContent = customMsg || 'Submission Failed';
+      savingSubtitle.textContent = 'Please check the form and try again.';
       savingIcon.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
       savingIcon.style.animation = 'none';
       progressFill.style.background = '#ef4444';
@@ -553,13 +588,83 @@
       setTimeout(() => hideProgress(), 2200);
     }
 
-    // ===== END PROGRESS CONTROLS =====
+    // ===== RESET FORM FUNCTION FOR NEW ENTRY =====
+    function resetFormForNewEntry() {
+      if (!confirm("Are you sure you want to fill a new application? Current view will be reset.")) {
+        return;
+      }
 
+      const form = document.getElementById('depForm');
+      form.reset();
+
+      // Reset email verification state
+      isEmailVerified = false;
+      emailVerifyToken = '';
+      if (otpTimer) { clearInterval(otpTimer); otpTimer = null; }
+
+      const emailInput = document.getElementById('email');
+      const sendEmailOtpBtn = document.getElementById('sendEmailOtpBtn');
+      const emailStatus = document.getElementById('emailStatus');
+      const emailOtpSection = document.getElementById('emailOtpSection');
+      const emailOtpInput = document.getElementById('emailOtp');
+      const submitBtn = document.getElementById('submitBtn');
+
+      emailInput.readOnly = false;
+      sendEmailOtpBtn.style.display = '';
+      sendEmailOtpBtn.disabled = false;
+      sendEmailOtpBtn.textContent = 'Send OTP';
+      emailStatus.innerHTML = '';
+      emailOtpSection.classList.add('hidden');
+      emailOtpInput.value = '';
+
+      // Reset dynamic containers
+      document.getElementById('expContainer').innerHTML = '';
+      document.getElementById('examContainer').innerHTML = '';
+      addRow('expContainer', false);
+      addRow('examContainer', true);
+
+      // Reset search selects
+      document.getElementById('parentOffice_ss').value = '';
+      document.getElementById('presentOffice_ss').value = '';
+      document.getElementById('parentOffice').value = '';
+      document.getElementById('presentOffice').value = '';
+
+      // Reset toggle sections
+      ['merit', 'achievements', 'otherInfo'].forEach(name => {
+        document.getElementById(`${name}DetailsWrap`).classList.add('hidden');
+        document.getElementById(`${name}Details`).value = '';
+      });
+      document.getElementById('presentOfficeOtherWrap').classList.add('hidden');
+      document.getElementById('categoryWrap').classList.add('hidden');
+
+      // Reset file previews
+      document.getElementById('photoPreviewWrap').classList.add('hidden');
+      document.getElementById('sigPreviewWrap').classList.add('hidden');
+      document.getElementById('photoThumb').src = '';
+      document.getElementById('sigThumb').src = '';
+
+      // Reset dates & calculation
+      const t = new Date();
+      document.getElementById('asOnDate').value = new Date(t.getTime() - (t.getTimezoneOffset() * 60000)).toISOString().slice(0, 10);
+      document.getElementById('age').value = '';
+      document.getElementById('yearsInGrade').value = '';
+      document.getElementById('status').textContent = '';
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submit Application';
+
+      // Switch views
+      document.getElementById('printView').classList.add('hidden');
+      document.getElementById('formContainer').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ===== MAIN SCRIPT =====
     document.addEventListener('DOMContentLoaded', () => {
       function renderOptions(select,arr,withEmpty=true){select.innerHTML=withEmpty?'<option value="">-- Select --</option>':'';arr.forEach(v=>{const opt=document.createElement('option');opt.value=v;opt.textContent=v;select.appendChild(opt);});}
       function yearsBetween(fromStr,toStr){if(!fromStr||!toStr)return '';const from=new Date(fromStr),to=new Date(toStr);let y=to.getFullYear()-from.getFullYear();const m=to.getMonth()-from.getMonth(),d=to.getDate()-from.getDate();if(m<0||(m===0&&d<0))y--;return y>=0?y:'';}
       function setToday(id){const el=document.getElementById(id);const t=new Date();el.value=new Date(t.getTime()-(t.getTimezoneOffset()*60000)).toISOString().slice(0,10);}
-      function toBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const base64=String(reader.result).split(',')[1];resolve({name:file.name,mimeType:file.type||'application/octet-stream',content:base64});};reader.onerror=reject;reader.readAsDataURL(file);});}
+      function toBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const base64=String(reader.result).split(',')[1];resolve({name:file.name,mimeType:file.type||'image/jpeg',content:base64});};reader.onerror=reject;reader.readAsDataURL(file);});}
       function showToast(msg, type = 'success') {
         const t = document.getElementById('toast');
         t.textContent = msg;
@@ -569,7 +674,67 @@
         setTimeout(() => t.classList.remove('show'), 4000);
       }
       function makeSearchableSelect(selectId){const select=document.getElementById(selectId);const input=document.getElementById(selectId+'_ss');const dd=document.getElementById(selectId+'_dd');const data=Array.from(select.options).filter(o=>o.value!=='').map(o=>({value:o.value,label:o.textContent}));function openDD(){dd.classList.add('open');renderList(input.value.trim());}function closeDD(){dd.classList.remove('open');}function renderList(filter){dd.innerHTML='';const list=!filter?data:data.filter(item=>item.label.toLowerCase().includes(filter.toLowerCase()));if(list.length===0){const empty=document.createElement('div');empty.className='ss-empty';empty.textContent='No match';dd.appendChild(empty);return;}list.forEach(item=>{const div=document.createElement('div');div.className='ss-option';div.textContent=item.label;div.dataset.value=item.value;div.addEventListener('mousedown',(e)=>{e.preventDefault();choose(item);});dd.appendChild(div);});}function choose(item){select.value=item.value;input.value=item.label;closeDD();select.dispatchEvent(new Event('change',{bubbles:true}));}input.addEventListener('focus',openDD);input.addEventListener('click',openDD);input.addEventListener('input',()=>{renderList(input.value.trim());});input.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeDD();});input.addEventListener('blur',()=>{setTimeout(()=>{const exact=data.find(d=>d.label.toLowerCase()===input.value.trim().toLowerCase());if(!exact){select.value='';input.value='';}else{select.value=exact.value;}closeDD();},150);});}
-      function validateFileInput(inputEl,errEl,requiredBaseName){const f=inputEl.files[0];if(!f){inputEl.setCustomValidity('Required');errEl.textContent='Required';errEl.classList.remove('hidden');return false;}const baseName=f.name.substring(0,f.name.lastIndexOf('.'))||f.name;if(baseName.toLowerCase()!==requiredBaseName.toLowerCase()){const msg=`Filename must be '${requiredBaseName}'`;inputEl.setCustomValidity(msg);errEl.textContent=msg;errEl.classList.remove('hidden');return false;}if(f.size>100*1024){const msg='Max 100 KB';inputEl.setCustomValidity(msg);errEl.textContent=msg;errEl.classList.remove('hidden');return false;}inputEl.setCustomValidity('');errEl.classList.add('hidden');return true;}
+      
+      function validateFileInput(inputEl, errEl, requiredBaseName, previewWrapId, thumbId, nameId, sizeId) {
+        const f = inputEl.files[0];
+        const previewWrap = document.getElementById(previewWrapId);
+        const thumb = document.getElementById(thumbId);
+        const nameEl = document.getElementById(nameId);
+        const sizeEl = document.getElementById(sizeId);
+
+        if (!f) {
+          inputEl.setCustomValidity('Required');
+          errEl.textContent = 'Required';
+          errEl.classList.remove('hidden');
+          if (previewWrap) previewWrap.classList.add('hidden');
+          return false;
+        }
+
+        const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        if (f.type && !validTypes.includes(f.type.toLowerCase())) {
+          const msg = 'File must be an image (JPEG/PNG)';
+          inputEl.setCustomValidity(msg);
+          errEl.textContent = msg;
+          errEl.classList.remove('hidden');
+          if (previewWrap) previewWrap.classList.add('hidden');
+          return false;
+        }
+
+        const baseName = f.name.substring(0, f.name.lastIndexOf('.')) || f.name;
+        if (baseName.toLowerCase() !== requiredBaseName.toLowerCase()) {
+          const msg = `Filename must be '${requiredBaseName}'`;
+          inputEl.setCustomValidity(msg);
+          errEl.textContent = msg;
+          errEl.classList.remove('hidden');
+          if (previewWrap) previewWrap.classList.add('hidden');
+          return false;
+        }
+
+        if (f.size > 100 * 1024) {
+          const msg = 'File exceeds maximum size of 100 KB';
+          inputEl.setCustomValidity(msg);
+          errEl.textContent = msg;
+          errEl.classList.remove('hidden');
+          if (previewWrap) previewWrap.classList.add('hidden');
+          return false;
+        }
+
+        inputEl.setCustomValidity('');
+        errEl.classList.add('hidden');
+
+        // Show instant preview
+        if (previewWrap && thumb) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            thumb.src = e.target.result;
+            if (nameEl) nameEl.textContent = f.name;
+            if (sizeEl) sizeEl.textContent = `${(f.size / 1024).toFixed(1)} KB (OK)`;
+            previewWrap.classList.remove('hidden');
+          };
+          reader.readAsDataURL(f);
+        }
+        return true;
+      }
 
       renderOptions(document.getElementById('stream'),STREAMS,true);
       renderOptions(document.getElementById('location'),LOCATIONS,true);
@@ -627,6 +792,7 @@
          document.getElementById(containerId).appendChild(wrap);
       }
 
+      window.addRow = addRow;
       document.getElementById('addExp').addEventListener('click',()=>addRow('expContainer',false));
       document.getElementById('addExam').addEventListener('click',()=>addRow('examContainer',true));
       addRow('expContainer');
@@ -662,26 +828,143 @@
          document.getElementById('mobileErr').classList.toggle('hidden', ok);
       });
 
-      ['merit','achievements','otherInfo'].forEach(name=>{document.querySelectorAll(`input[name="${name}"]`).forEach(radio=>{radio.addEventListener('change',()=>toggleDetails(name));});toggleDetails(name);});function toggleDetails(name){const show=document.querySelector(`input[name="${name}"]:checked`)?.value==='Yes';document.getElementById(`${name}DetailsWrap`).classList.toggle('hidden',!show);const el=document.getElementById(`${name}Details`);el.required=show;if(!show)el.value='';}
+      ['merit','achievements','otherInfo'].forEach(name=>{document.querySelectorAll(`input[name="${name}"]`).forEach(radio=>{radio.addEventListener('change',()=>toggleDetails(name));});toggleDetails(name);});
+      function toggleDetails(name){
+        const show=document.querySelector(`input[name="${name}"]:checked`)?.value==='Yes';
+        document.getElementById(`${name}DetailsWrap`).classList.toggle('hidden',!show);
+        const el=document.getElementById(`${name}Details`);
+        el.required=show;
+        if(!show) el.value='';
+      }
 
-      document.getElementById('photo').addEventListener('change',()=>validateFileInput(document.getElementById('photo'),document.getElementById('photoErr'),'Photo'));
-      document.getElementById('signature').addEventListener('change',()=>validateFileInput(document.getElementById('signature'),document.getElementById('signatureErr'),'Signature'));
+      document.getElementById('photo').addEventListener('change', () => validateFileInput(
+        document.getElementById('photo'),
+        document.getElementById('photoErr'),
+        'Photo',
+        'photoPreviewWrap', 'photoThumb', 'photoFileName', 'photoFileSize'
+      ));
 
-      const emailInput=document.getElementById('email');const emailErr=document.getElementById('emailErr');const sendEmailOtpBtn=document.getElementById('sendEmailOtpBtn');const verifyEmailOtpBtn=document.getElementById('verifyEmailOtpBtn');const emailOtpInput=document.getElementById('emailOtp');const emailOtpSection=document.getElementById('emailOtpSection');const emailStatus=document.getElementById('emailStatus');const emailOtpErr=document.getElementById('emailOtpErr');const submitBtn=document.getElementById('submitBtn');const confirmCheckbox=document.getElementById('confirm');
+      document.getElementById('signature').addEventListener('change', () => validateFileInput(
+        document.getElementById('signature'),
+        document.getElementById('signatureErr'),
+        'Signature',
+        'sigPreviewWrap', 'sigThumb', 'sigFileName', 'sigFileSize'
+      ));
+
+      const emailInput=document.getElementById('email');
+      const emailErr=document.getElementById('emailErr');
+      const sendEmailOtpBtn=document.getElementById('sendEmailOtpBtn');
+      const verifyEmailOtpBtn=document.getElementById('verifyEmailOtpBtn');
+      const emailOtpInput=document.getElementById('emailOtp');
+      const emailOtpSection=document.getElementById('emailOtpSection');
+      const emailStatus=document.getElementById('emailStatus');
+      const emailOtpErr=document.getElementById('emailOtpErr');
+      const submitBtn=document.getElementById('submitBtn');
+      const confirmCheckbox=document.getElementById('confirm');
+
       function stopOtpTimer() { if (otpTimer) { clearInterval(otpTimer); otpTimer = null; } }
-      function updateSubmitButtonState(){submitBtn.disabled=!(confirmCheckbox.checked&&isEmailVerified);}
-      confirmCheckbox.addEventListener('change',updateSubmitButtonState);
+      function updateSubmitButtonState(){ submitBtn.disabled=!(confirmCheckbox.checked && isEmailVerified); }
+      confirmCheckbox.addEventListener('change', updateSubmitButtonState);
       updateSubmitButtonState();
 
-      emailInput.addEventListener('input',()=>{ if(isEmailVerified){ isEmailVerified=false; stopOtpTimer(); emailStatus.innerHTML='<span style="color: #b91c1c;">Email changed. Verify again.</span>'; emailInput.readOnly=false; sendEmailOtpBtn.disabled=false; sendEmailOtpBtn.textContent='Send OTP'; emailOtpSection.classList.add('hidden'); updateSubmitButtonState(); } });
-      sendEmailOtpBtn.addEventListener('click',()=>{ const email=emailInput.value.trim(); if(!/^[^@]+@cag\.gov\.in$/i.test(email)){emailErr.textContent='Invalid @cag.gov.in email.';emailErr.classList.remove('hidden');return;} emailErr.classList.add('hidden'); stopOtpTimer(); sendEmailOtpBtn.disabled=true; sendEmailOtpBtn.textContent='Sending...'; emailStatus.textContent=''; google.script.run.withSuccessHandler(res=>{ emailStatus.textContent=res.message; emailOtpSection.classList.remove('hidden'); emailOtpInput.focus(); let countdown = 60; sendEmailOtpBtn.textContent = `Resend in ${countdown}s`; otpTimer = setInterval(() => { countdown--; if(countdown >= 0) sendEmailOtpBtn.textContent = `Resend in ${countdown}s`; else { stopOtpTimer(); sendEmailOtpBtn.textContent = 'Resend OTP'; sendEmailOtpBtn.disabled = false; } }, 1000); }).withFailureHandler(err=>{ emailStatus.innerHTML=`<span class="fail">${err.message}</span>`; sendEmailOtpBtn.disabled=false; sendEmailOtpBtn.textContent='Send OTP'; }).sendEmailOTP(email); });
-      verifyEmailOtpBtn.addEventListener('click',()=>{ const email=emailInput.value.trim(); const otp=emailOtpInput.value.trim(); if(otp.length!==6){emailOtpErr.textContent='OTP must be 6 digits.';emailOtpErr.classList.remove('hidden');return;} emailOtpErr.classList.add('hidden'); verifyEmailOtpBtn.disabled=true; verifyEmailOtpBtn.textContent='Verifying...'; google.script.run.withSuccessHandler(res=>{ verifyEmailOtpBtn.disabled=false; verifyEmailOtpBtn.textContent='Verify OTP'; if(res.verified){ isEmailVerified=true; stopOtpTimer(); emailStatus.innerHTML='✅ <strong style="color: #065f46;">Verified!</strong>'; emailOtpSection.classList.add('hidden'); emailInput.readOnly=true; sendEmailOtpBtn.style.display='none'; updateSubmitButtonState(); } else { isEmailVerified=false; emailOtpErr.textContent=res.message; emailOtpErr.classList.remove('hidden'); } }).withFailureHandler(err=>{ emailOtpErr.textContent=err.message; emailOtpErr.classList.remove('hidden'); verifyEmailOtpBtn.disabled=false; verifyEmailOtpBtn.textContent='Verify OTP'; }).verifyEmailOTP({email,otp}); });
+      emailInput.addEventListener('input',()=>{
+        if(isEmailVerified){
+          isEmailVerified=false;
+          emailVerifyToken='';
+          stopOtpTimer();
+          emailStatus.innerHTML='<span style="color: #b91c1c;">Email changed. Please verify again.</span>';
+          emailInput.readOnly=false;
+          sendEmailOtpBtn.disabled=false;
+          sendEmailOtpBtn.textContent='Send OTP';
+          emailOtpSection.classList.add('hidden');
+          updateSubmitButtonState();
+        }
+      });
+
+      sendEmailOtpBtn.addEventListener('click', () => {
+        const email = emailInput.value.trim().toLowerCase();
+        if (!/^[\w.-]+@cag\.gov\.in$/i.test(email)) {
+          emailErr.textContent = 'Please enter a valid @cag.gov.in email.';
+          emailErr.classList.remove('hidden');
+          return;
+        }
+        emailErr.classList.add('hidden');
+        stopOtpTimer();
+        sendEmailOtpBtn.disabled = true;
+        sendEmailOtpBtn.textContent = 'Sending...';
+        emailStatus.textContent = '';
+
+        google.script.run.withSuccessHandler(res => {
+          emailStatus.textContent = res.message;
+          emailOtpSection.classList.remove('hidden');
+          emailOtpInput.focus();
+          let countdown = 60;
+          sendEmailOtpBtn.textContent = `Resend in ${countdown}s`;
+          otpTimer = setInterval(() => {
+            countdown--;
+            if (countdown >= 0) sendEmailOtpBtn.textContent = `Resend in ${countdown}s`;
+            else {
+              stopOtpTimer();
+              sendEmailOtpBtn.textContent = 'Resend OTP';
+              sendEmailOtpBtn.disabled = false;
+            }
+          }, 1000);
+        }).withFailureHandler(err => {
+          emailStatus.innerHTML = `<span style="color:#dc2626;">${esc(err.message)}</span>`;
+          sendEmailOtpBtn.disabled = false;
+          sendEmailOtpBtn.textContent = 'Send OTP';
+        }).sendEmailOTP(email);
+      });
+
+      verifyEmailOtpBtn.addEventListener('click', () => {
+        const email = emailInput.value.trim().toLowerCase();
+        const otp = emailOtpInput.value.trim();
+        if (otp.length !== 6) {
+          emailOtpErr.textContent = 'OTP must be 6 digits.';
+          emailOtpErr.classList.remove('hidden');
+          return;
+        }
+        emailOtpErr.classList.add('hidden');
+        verifyEmailOtpBtn.disabled = true;
+        verifyEmailOtpBtn.textContent = 'Verifying...';
+
+        google.script.run.withSuccessHandler(res => {
+          verifyEmailOtpBtn.disabled = false;
+          verifyEmailOtpBtn.textContent = 'Verify OTP';
+          if (res.verified) {
+            isEmailVerified = true;
+            emailVerifyToken = res.verifyToken || '';
+            stopOtpTimer();
+            emailStatus.innerHTML = '✅ <strong style="color: #065f46;">Email Verified Successfully!</strong>';
+            emailOtpSection.classList.add('hidden');
+            emailInput.readOnly = true;
+            sendEmailOtpBtn.style.display = 'none';
+            updateSubmitButtonState();
+          } else {
+            isEmailVerified = false;
+            emailVerifyToken = '';
+            emailOtpErr.textContent = res.message || 'Invalid OTP.';
+            emailOtpErr.classList.remove('hidden');
+          }
+        }).withFailureHandler(err => {
+          emailOtpErr.textContent = err.message || 'Verification failed.';
+          emailOtpErr.classList.remove('hidden');
+          verifyEmailOtpBtn.disabled = false;
+          verifyEmailOtpBtn.textContent = 'Verify OTP';
+        }).verifyEmailOTP({ email, otp });
+      });
 
       const depForm = document.getElementById('depForm');
       depForm.addEventListener('submit', async(e) => {
           e.preventDefault();
-          if(!isEmailVerified){ document.getElementById('emailStatus').innerHTML='<span class="fail">Please verify email.</span>'; return; }
-          if(!depForm.checkValidity()){ depForm.reportValidity(); return; }
+          if(!isEmailVerified || !emailVerifyToken){
+            document.getElementById('emailStatus').innerHTML = '<span style="color:#dc2626;">Please verify your @cag.gov.in email via OTP before submitting.</span>';
+            return;
+          }
+          if(!depForm.checkValidity()){
+            depForm.reportValidity();
+            return;
+          }
 
           const examRows = document.querySelectorAll('#examContainer .rowline');
           const exams = [];
@@ -703,49 +986,54 @@
                if(catSel && catSel.value) experience.push({ category: catSel.value, details: detInp ? detInp.value.trim() : '' });
           });
 
-          if(exams.length===0){ document.getElementById('examErr').classList.remove('hidden'); return; }
-          else { document.getElementById('examErr').classList.add('hidden'); }
+          if(exams.length===0){
+            document.getElementById('examErr').classList.remove('hidden');
+            return;
+          } else {
+            document.getElementById('examErr').classList.add('hidden');
+          }
 
           stopOtpTimer();
-          const statusEl = document.getElementById('status'); statusEl.textContent = '';
-          submitBtn.disabled = true; submitBtn.textContent = 'Saving...';
+          const statusEl = document.getElementById('status');
+          statusEl.textContent = '';
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Saving...';
 
-          // ---- SHOW PROGRESS OVERLAY ----
+          // ---- PROGRESS OVERLAY ----
           showProgress();
-
-          // Step 1: Validating
           setStep(0); animateTo(15, 400);
 
           let photo, signature;
           try {
-            await new Promise(r => setTimeout(r, 500)); // small delay for UX
+            await new Promise(r => setTimeout(r, 400));
             photo = await toBase64(document.getElementById('photo').files[0]);
             signature = await toBase64(document.getElementById('signature').files[0]);
           } catch(err) {
-            statusEl.textContent = 'File error.';
-            submitBtn.disabled = false; submitBtn.textContent = 'Submit Application';
-            markError();
+            statusEl.textContent = 'File reading error.';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Application';
+            markError('File Upload Error');
             return;
           }
 
-          // Step 2: Uploading files
           setStep(1); animateTo(40, 600);
-          await new Promise(r => setTimeout(r, 400));
+          await new Promise(r => setTimeout(r, 350));
 
           const payload = {
-              name: document.getElementById('name').value,
+              name: document.getElementById('name').value.trim(),
               designation: 'SAO',
               stream: document.getElementById('stream').value,
               gender: document.querySelector('input[name="gender"]:checked')?.value,
-              mobile: document.getElementById('mobile').value,
-              email: document.getElementById('email').value,
+              mobile: document.getElementById('mobile').value.trim(),
+              email: document.getElementById('email').value.trim().toLowerCase(),
+              verifyToken: emailVerifyToken,
               dob: document.getElementById('dob').value,
               location: document.getElementById('location').value,
-              qualEducational: document.getElementById('qualEducational').value,
-              qualProfessional: document.getElementById('qualProfessional').value,
+              qualEducational: document.getElementById('qualEducational').value.trim(),
+              qualProfessional: document.getElementById('qualProfessional').value.trim(),
               parentOffice: document.getElementById('parentOffice').value,
               presentOffice: document.getElementById('presentOffice').value,
-              presentOfficeOther: document.getElementById('presentOfficeOther').value,
+              presentOfficeOther: document.getElementById('presentOfficeOther').value.trim(),
               scst: document.querySelector('input[name="scst"]:checked')?.value,
               category: document.getElementById('category').value,
               entryGovt: document.getElementById('entryGovt').value,
@@ -754,37 +1042,37 @@
               dateSAO: document.getElementById('dateSAO').value,
               asOnDate: document.getElementById('asOnDate').value,
               payLevel: (document.getElementById('payLevel').value||'').replace('Level ',''),
-              payAmount: document.getElementById('payAmount').value,
+              payAmount: document.getElementById('payAmount').value.trim(),
               exams, experience,
               merit: document.querySelector('input[name="merit"]:checked')?.value,
-              meritDetails: document.getElementById('meritDetails').value,
+              meritDetails: document.getElementById('meritDetails').value.trim(),
               achievements: document.querySelector('input[name="achievements"]:checked')?.value,
-              achievementsDetails: document.getElementById('achievementsDetails').value,
+              achievementsDetails: document.getElementById('achievementsDetails').value.trim(),
               otherInfo: document.querySelector('input[name="otherInfo"]:checked')?.value,
-              otherInfoDetails: document.getElementById('otherInfoDetails').value,
+              otherInfoDetails: document.getElementById('otherInfoDetails').value.trim(),
               photo, signature
           };
 
-          // Step 3: Saving
           setStep(2); animateTo(70, 600);
 
           google.script.run.withSuccessHandler(res => {
-              submitBtn.disabled = false; submitBtn.textContent = 'Submit Application';
-              if(res.ok) {
-                  // Step 4: Generating PDF
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Submit Application';
+              if(res && res.ok) {
                   setStep(3); animateTo(90, 400);
                   setTimeout(() => {
                     markSuccess();
                     setTimeout(() => showPrintView(payload, res.id, res.pdfUrl), 1850);
                   }, 600);
               } else {
-                  statusEl.textContent = 'Failed to save.';
-                  markError();
+                  statusEl.textContent = 'Failed to save application.';
+                  markError(res ? res.message : 'Save Failed');
               }
           }).withFailureHandler(err => {
-              submitBtn.disabled = false; submitBtn.textContent = 'Submit Application';
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Submit Application';
               statusEl.textContent = 'Error: ' + err.message;
-              markError();
+              markError(err.message);
           }).saveForm(payload);
       });
     });
@@ -798,42 +1086,63 @@
         document.getElementById('pv-date').textContent = new Date().toLocaleString();
         if(photoSrc) document.getElementById('pv-photo').src = photoSrc;
         if(sigSrc) document.getElementById('pv-sig').src = sigSrc;
+        
         const row = (l, v) => `<div class="pv-row"><div class="pv-label">${l}</div><div class="pv-val">${v || '-'}</div></div>`;
+        
         let h = '<div class="pv-section"><div class="pv-sec-title">Part 1: Common Details</div>';
-        h += row('Name', d.name); h += row('Designation', 'SAO'); h += row('Stream', d.stream);
-        h += row('Gender', d.gender); h += row('Mobile', d.mobile); h += row('Email', d.email);
-        h += row('Date of Birth', d.dob); h += row('Age', document.getElementById('age').value);
-        h += row('Location', d.location); h += row('Qual. (Edu)', d.qualEducational);
-        h += row('Qual. (Prof)', d.qualProfessional); h += row('Parent Office', d.parentOffice);
-        h += row('Present Office', d.presentOffice==='Other'?d.presentOfficeOther:d.presentOffice);
-        h += row('SC/ST', d.scst);
-        if(d.scst==='Yes') h += row('Category', d.category);
-        h += row('Entry Govt', d.entryGovt); h += row('Entry IA&AD', d.entryIAAD);
+        h += row('Name', esc(d.name));
+        h += row('Designation', 'SAO');
+        h += row('Stream', esc(d.stream));
+        h += row('Gender', esc(d.gender));
+        h += row('Mobile', esc(d.mobile));
+        h += row('Email', esc(d.email));
+        h += row('Date of Birth', esc(d.dob));
+        h += row('Age', esc(document.getElementById('age').value));
+        h += row('Location', esc(d.location));
+        h += row('Qual. (Edu)', esc(d.qualEducational));
+        h += row('Qual. (Prof)', esc(d.qualProfessional));
+        h += row('Parent Office', esc(d.parentOffice));
+        h += row('Present Office', esc(d.presentOffice==='Other'?d.presentOfficeOther:d.presentOffice));
+        h += row('SC/ST', esc(d.scst));
+        if(d.scst==='Yes') h += row('Category', esc(d.category));
+        h += row('Entry Govt', esc(d.entryGovt));
+        h += row('Entry IA&AD', esc(d.entryIAAD));
         h += '</div>';
         
         h += `<div class="pv-section"><div class="pv-sec-title">Part 2: Service Details (SAO)</div>`;
-        h += row('SOG Year', d.sogYear);
-        const examList = d.exams.map(e=>`<li>${e.exam} (${e.year})</li>`).join('');
+        h += row('SOG Year', esc(d.sogYear));
+        const examList = (d.exams || []).map(e=>`<li>${esc(e.exam)} (${esc(e.year)})</li>`).join('');
         h += row('Dept Exams', `<ul style="margin:0; padding-left:15px; list-style-type: square;">${examList}</ul>`);
-        h += row('Date of promotion as SAO', d.dateSAO);
-        h += row('As On Date', d.asOnDate);
-        h += row('Years in Grade', document.getElementById('yearsInGrade').value);
-        h += row('Pay Level', 'Level '+d.payLevel); h += row('Pay Amount', d.payAmount);
+        h += row('Date of promotion as SAO', esc(d.dateSAO));
+        h += row('As On Date', esc(d.asOnDate));
+        h += row('Years in Grade', esc(document.getElementById('yearsInGrade').value));
+        h += row('Pay Level', 'Level ' + esc(d.payLevel));
+        h += row('Pay Amount', esc(d.payAmount));
+        
         let expTable = `<table style="width:100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; border: 1px solid #e5e7eb; table-layout: fixed;"><thead><tr style="background:#f9fafb; color:#374151;"><th style="border:1px solid #e5e7eb; padding:8px; text-align:left; width: 35%;">Category</th><th style="border:1px solid #e5e7eb; padding:8px; text-align:left; width: 65%;">Details</th></tr></thead><tbody>`;
-        d.experience.forEach(e => { expTable += `<tr><td style="border:1px solid #e5e7eb; padding:8px; font-weight:600; vertical-align:top; width: 35%;">${e.category}</td><td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top; width: 65%; word-wrap: break-word;">${e.details || '-'}</td></tr>`; });
+        (d.experience || []).forEach(e => {
+          expTable += `<tr><td style="border:1px solid #e5e7eb; padding:8px; font-weight:600; vertical-align:top; width: 35%;">${esc(e.category)}</td><td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top; width: 65%; word-wrap: break-word;">${esc(e.details) || '-'}</td></tr>`;
+        });
         expTable += '</tbody></table>';
         h += `<div class="pv-row" style="flex-direction: column;"><div class="pv-label" style="width:100%; border-right:none; border-bottom:1px solid #f3f4f6;">Working Experience</div><div class="pv-val" style="width:100%; padding:10px;">${expTable}</div></div>`;
-        h += row('Merit', d.merit + (d.merit==='Yes'?'<br>'+d.meritDetails:''));
-        h += row('Achievements', d.achievements + (d.achievements==='Yes'?'<br>'+d.achievementsDetails:''));
-        h += row('Other Info', d.otherInfo + (d.otherInfo==='Yes'?'<br>'+d.otherInfoDetails:''));
+        
+        h += row('Merit', esc(d.merit) + (d.merit==='Yes'?'<br>'+esc(d.meritDetails):''));
+        h += row('Achievements', esc(d.achievements) + (d.achievements==='Yes'?'<br>'+esc(d.achievementsDetails):''));
+        h += row('Other Info', esc(d.otherInfo) + (d.otherInfo==='Yes'?'<br>'+esc(d.otherInfoDetails):''));
         h += '</div>';
 
         h += `<div class="pv-section" style="padding: 15px; font-weight: 600; background:#f9fafb; border-color:#e5e7eb;"><input type="checkbox" checked disabled style="margin-right: 8px;"> The information furnished above are correct to the best of my knowledge.</div><div style="border-bottom: 2px solid #e5e7eb; margin: 30px 0;"></div>`;
+        
         document.getElementById('pv-content').innerHTML = h;
         const btn = document.getElementById('downloadPdfBtn');
-        if(pdfUrl){ btn.href=pdfUrl; btn.download=`Receipt_${refId}.pdf`; btn.classList.remove('hidden'); }
-        else btn.classList.add('hidden');
-        window.scrollTo(0,0);
+        if(pdfUrl){
+          btn.href = pdfUrl;
+          btn.download = `Receipt_${refId}.pdf`;
+          btn.classList.remove('hidden');
+        } else {
+          btn.classList.add('hidden');
+        }
+        window.scrollTo(0, 0);
     }
   </script>
 </body>
