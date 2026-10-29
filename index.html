@@ -746,6 +746,50 @@
       makeSearchableSelect('presentOffice');
       setToday('asOnDate');
 
+      function updateExamOptions() {
+        const allExamSelects = document.querySelectorAll('#examContainer .dynamic-select');
+        const selectedExams = new Set();
+
+        // 1. Gather all selected non-'Other' exams
+        allExamSelects.forEach(sel => {
+          const val = sel.value;
+          if (val && val !== 'Other') {
+            selectedExams.add(val);
+          }
+        });
+
+        // 2. Re-render options for each exam dropdown
+        allExamSelects.forEach(sel => {
+          const currentVal = sel.value;
+          sel.innerHTML = '<option value="">-- Select --</option>';
+
+          EXAMS_LIST.forEach(exam => {
+            // Include option if:
+            // - It is currently selected in THIS dropdown, OR
+            // - It is not selected in any other dropdown, OR
+            // - It is 'Other' (which can be chosen multiple times with different custom names)
+            if (exam === currentVal || !selectedExams.has(exam) || exam === 'Other') {
+              const opt = document.createElement('option');
+              opt.value = exam;
+              opt.textContent = exam;
+              if (exam === currentVal) opt.selected = true;
+              sel.appendChild(opt);
+            }
+          });
+        });
+
+        // 3. Informative tooltip on + Add Exam button
+        const addBtn = document.getElementById('addExam');
+        const remainingCount = EXAMS_LIST.filter(e => e !== 'Other' && !selectedExams.has(e)).length;
+        if (addBtn) {
+          if (remainingCount === 0) {
+            addBtn.title = 'All standard departmental exams have been added. You can still add other exams if needed.';
+          } else {
+            addBtn.title = `${remainingCount} standard exam(s) remaining`;
+          }
+        }
+      }
+
       function addRow(containerId, isExam=false){
          const wrap=document.createElement('div');wrap.className='rowline';
          const sel=document.createElement('select');
@@ -773,23 +817,27 @@
              otherInp.className = 'exam-other hidden';
              otherInp.style.flex = "1";
              sel.addEventListener('change', function() {
-                 if(this.value === 'Other') { otherInp.classList.remove('hidden'); }
-                 else { otherInp.classList.add('hidden'); }
-                 const allSelects = document.querySelectorAll('#examContainer .dynamic-select');
-                 const currentVal = this.value;
-                 let count = 0;
-                 if(currentVal && currentVal !== 'Other') {
-                     allSelects.forEach(s => { if(s.value === currentVal) count++; });
-                     if(count > 1) { alert('You have already selected this exam.'); this.value = ''; otherInp.classList.add('hidden'); }
+                 if(this.value === 'Other') {
+                     otherInp.classList.remove('hidden');
+                     otherInp.required = true;
+                 } else {
+                     otherInp.classList.add('hidden');
+                     otherInp.required = false;
+                     otherInp.value = '';
                  }
+                 updateExamOptions();
              });
          }
          const btn=document.createElement('button');btn.type='button';btn.className='remove';btn.textContent='X';
-         btn.onclick=()=>wrap.remove();
+         btn.onclick=()=>{
+             wrap.remove();
+             if(isExam) updateExamOptions();
+         };
          wrap.append(sel);
          if(otherInp) wrap.append(otherInp);
          wrap.append(inp, btn);
          document.getElementById(containerId).appendChild(wrap);
+         if(isExam) updateExamOptions();
       }
 
       window.addRow = addRow;
