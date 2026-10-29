@@ -43,7 +43,7 @@
     .toast { position: fixed; top: 24px; right: 24px; background: #10b981; color: #fff; padding: 14px 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(16,185,129,0.3); opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; z-index: 99999; font-weight: 600; }
     .toast.show { opacity: 1; transform: translateY(0); }
 
-    /* ===== SAVING PROGRESS OVERLAY ===== */
+    
     #savingOverlay {
       position: fixed; inset: 0; z-index: 999999;
       background: rgba(15, 10, 30, 0.72);
@@ -118,7 +118,7 @@
     }
     .progress-step.done .step-dot { border-color: #10b981; background: #10b981; color: #fff; }
 
-    /* PRINT VIEW STYLES */
+    
     #printView { background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
     .pv-banner { background: #e0f2fe; border: 1px solid #bae6fd; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
     .pv-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb; margin-bottom: 0; }
@@ -368,12 +368,7 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    // =========================================================================
-    // ⚙️ GOOGLE APPS SCRIPT WEB APP URL
-    // Replace with your deployed Web App URL (Execute as: Me, Access: Anyone)
-    // Example: "https://script.google.com/macros/s/AKfycb.../exec"
-    // =========================================================================
-    const APPS_SCRIPT_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwojSdOXvArDE51FqUMgyVhyPtWQabiOxdC5du4PYFe6f0VfK4ncJGOCPdnlA-jAvqe/exec";
 
     // ── Universal google.script.run Polyfill for GitHub Pages / External Web ──
     if (!window.google || !window.google.script || !window.google.script.run) {
