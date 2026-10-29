@@ -1,0 +1,866 @@
+<!doctype html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deputation Form - SAO/AAO</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #1f2937; min-height: 100vh; }
+    .container { max-width: 1080px; margin: 0 auto; background: #fff; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); padding: 30px; }
+    h1 { margin: 0 0 20px; font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-align: center; text-transform: uppercase; }
+    fieldset { border: 2px solid #e5e7eb; border-radius: 12px; background: #f9fafb; padding: 20px; margin-bottom: 20px; transition: all 0.3s ease; }
+    fieldset:hover { border-color: #667eea; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1); }
+    legend { padding: 0 12px; font-weight: 700; color: #667eea; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+    label { display: block; margin: 12px 0 6px; font-weight: 600; color: #374151; font-size: 14px; }
+    .group { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
+    @media (min-width: 1200px) { .group { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .span-2 { grid-column: span 2; }
+    input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="number"], select, textarea { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: #fff; transition: all 0.3s ease; }
+    input:focus, select:focus, textarea:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+    input[readonly] { background: #f3f4f6; cursor: not-allowed; }
+    .inline { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .error { color: #dc2626; font-size: 12px; margin-top: 6px; }
+    .muted { color: #6b7280; font-size: 12px; margin-top: 4px; }
+    .hidden { display: none !important; }
+    .req::after { content: " *"; color: #dc2626; font-weight: 900; }
+    button { padding: 11px 20px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; font-weight: 700; cursor: pointer; transition: all 0.3s ease; font-size: 14px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
+    button:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4); }
+    button[disabled] { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
+    .btn-secondary { background: #8b5cf6; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }
+    .rowline { display:flex; gap:8px; align-items:center; flex-wrap: wrap; margin-bottom: 8px; }
+    .rowline > * { flex: 1; }
+    .rowline .remove { flex: 0 0 auto; padding: 12px; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    .search-select { position: relative; }
+    .search-select select { display: none; }
+    .ss-input { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: #fff; }
+    .ss-dropdown { position: absolute; left: 0; right: 0; top: calc(100% + 8px); background: #fff; border: 2px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 280px; overflow-y: auto; z-index: 10000; display: none; }
+    .ss-dropdown.open { display: block; }
+    .ss-option { padding: 12px 14px; cursor: pointer; transition: all 0.2s ease; }
+    .ss-option:hover { background: #f0f4ff; }
+    .toast { position: fixed; top: 24px; right: 24px; background: #10b981; color: #fff; padding: 14px 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(16,185,129,0.3); opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; z-index: 99999; font-weight: 600; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* ===== SAVING PROGRESS OVERLAY ===== */
+    #savingOverlay {
+      position: fixed; inset: 0; z-index: 999999;
+      background: rgba(15, 10, 30, 0.72);
+      backdrop-filter: blur(6px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    #savingOverlay.visible { opacity: 1; pointer-events: all; }
+    .saving-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px 48px;
+      text-align: center;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.35);
+      min-width: 340px;
+      max-width: 90vw;
+      animation: cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes cardPop { from { transform: scale(0.85) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+    .saving-icon {
+      width: 64px; height: 64px; margin: 0 auto 20px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex; align-items: center; justify-content: center;
+      animation: iconPulse 1.4s ease-in-out infinite;
+    }
+    @keyframes iconPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(102,126,234,0.5); } 50% { box-shadow: 0 0 0 14px rgba(102,126,234,0); } }
+    .saving-icon svg { width: 30px; height: 30px; }
+    .saving-icon.done-state { animation: none; background: linear-gradient(135deg, #10b981, #059669); }
+    .saving-title { font-size: 20px; font-weight: 800; color: #1f2937; margin-bottom: 6px; letter-spacing: -0.3px; }
+    .saving-subtitle { font-size: 13px; color: #6b7280; margin-bottom: 24px; }
+    .progress-track {
+      width: 100%; height: 10px;
+      background: #f3f4f6;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #667eea 0%, #a855f7 50%, #764ba2 100%);
+      background-size: 200% 100%;
+      width: 0%;
+      transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+      animation: shimmer 1.6s linear infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .progress-pct { font-size: 13px; font-weight: 700; color: #667eea; margin-bottom: 16px; }
+    .progress-steps { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; text-align: left; }
+    .progress-step {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12.5px; color: #9ca3af;
+      transition: color 0.3s ease;
+    }
+    .progress-step.active { color: #374151; font-weight: 600; }
+    .progress-step.done { color: #10b981; font-weight: 600; }
+    .step-dot {
+      width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+      border: 2px solid #e5e7eb;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; transition: all 0.3s ease; background: #fff;
+    }
+    .progress-step.active .step-dot {
+      border-color: #667eea; background: #667eea;
+      animation: dotSpin 0.8s linear infinite;
+    }
+    @keyframes dotSpin {
+      0% { box-shadow: 2px 0 0 0 rgba(255,255,255,0.9), 0 2px 0 0 rgba(255,255,255,0.4), -2px 0 0 0 rgba(255,255,255,0.2), 0 -2px 0 0 rgba(255,255,255,0.6); }
+      100% { box-shadow: 0 2px 0 0 rgba(255,255,255,0.9), -2px 0 0 0 rgba(255,255,255,0.4), 0 -2px 0 0 rgba(255,255,255,0.2), 2px 0 0 0 rgba(255,255,255,0.6); }
+    }
+    .progress-step.done .step-dot { border-color: #10b981; background: #10b981; color: #fff; }
+
+    /* PRINT VIEW STYLES */
+    #printView { background: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .pv-banner { background: #e0f2fe; border: 1px solid #bae6fd; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .pv-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 15px; border-bottom: 2px solid #e5e7eb; margin-bottom: 0; }
+    .pv-meta-strip { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 2px solid #e5e7eb; margin-bottom: 25px; font-size: 11px; color: #6b7280; font-weight: 700; background: #fdfdfd; }
+    .pv-section { margin-bottom: 20px; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; }
+    .pv-sec-title { background: #f3f4f6; padding: 8px 12px; font-weight: 700; font-size: 13px; border-bottom: 1px solid #e5e7eb; color: #374151; }
+    .pv-row { display: flex; border-bottom: 1px solid #f3f4f6; font-size: 12px; }
+    .pv-row:last-child { border-bottom: none; }
+    .pv-label { width: 40%; padding: 8px 12px; background: #fafafa; color: #4b5563; font-weight: 600; border-right: 1px solid #f3f4f6; }
+    .pv-val { width: 60%; padding: 8px 12px; color: #111827; word-break: break-word; white-space: pre-line; }
+    .pv-footer { margin-top: 30px; text-align: right; }
+    .pv-sig-box { display: inline-block; text-align: center; }
+    .pv-sig-box img { height: 60px; border: 1px solid #e5e7eb; padding: 4px; border-radius: 4px; min-width: 100px; display: block; margin: 0 auto 5px auto; }
+    .pv-sig-box p { font-size:10px; font-weight:700; color:#6b7280; margin: 0; }
+    .pv-photo-box img { height: 120px; width: 100px; object-fit: cover; border: 2px solid #e5e7eb; padding: 4px; border-radius: 4px; }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .container, .toast, .no-print, #savingOverlay { display: none !important; }
+      #printView { display: block !important; box-shadow: none; padding: 20px; width: 100%; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SAVING PROGRESS OVERLAY -->
+  <div id="savingOverlay">
+    <div class="saving-card">
+      <div class="saving-icon" id="savingIcon">
+        <svg id="spinIcon" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+        </svg>
+      </div>
+      <div class="saving-title" id="savingTitle">Saving your application…</div>
+      <div class="saving-subtitle" id="savingSubtitle">Please wait, do not close this tab</div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-pct" id="progressPct">0%</div>
+      <div class="progress-steps" id="progressSteps">
+        <div class="progress-step" id="step1"><div class="step-dot" id="dot1"></div><span>Validating form data</span></div>
+        <div class="progress-step" id="step2"><div class="step-dot" id="dot2"></div><span>Uploading documents &amp; files</span></div>
+        <div class="progress-step" id="step3"><div class="step-dot" id="dot3"></div><span>Saving to database</span></div>
+        <div class="progress-step" id="step4"><div class="step-dot" id="dot4"></div><span>Generating PDF receipt</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="formContainer">
+    <h1>DEPUTATION FORM<br><small style="font-size:16px;font-weight:normal;opacity:0.9;">SAO / AAO Cadre</small></h1>
+
+    <form id="depForm">
+      <fieldset>
+        <legend>Part 1: Common Details</legend>
+        <div class="group">
+          <div><label class="req">Name</label><input type="text" id="name" required></div>
+          <div>
+            <label class="req">Designation</label>
+            <select id="designation" required>
+              <option value="">-- Select --</option>
+              <option value="AAO">AAO</option>
+              <option value="SAO">SAO</option>
+            </select>
+          </div>
+          <div><label class="req">Stream</label><select id="stream" required></select></div>
+          <div>
+            <label class="req">Gender</label>
+            <div class="inline">
+              <label><input type="radio" name="gender" value="Male" required> Male</label>
+              <label><input type="radio" name="gender" value="Female" required> Female</label>
+            </div>
+          </div>
+          <div>
+            <label class="req">Mobile Number</label>
+            <input type="tel" id="mobile" inputmode="numeric" maxlength="10" placeholder="10 digits" required>
+            <div id="mobileErr" class="error hidden">Please enter a valid 10-digit mobile number.</div>
+          </div>
+          <div>
+            <label class="req">Email (@cag.gov.in)</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="email" id="email" placeholder="name@cag.gov.in" required style="flex-grow: 1;">
+              <button type="button" id="sendEmailOtpBtn" class="btn-secondary" style="flex: 0 0 auto;">Send OTP</button>
+            </div>
+            <div id="emailErr" class="error hidden">Please enter a valid @cag.gov.in email.</div>
+            <div id="emailStatus" class="muted" style="margin-top: 4px;"></div>
+            <div id="emailOtpSection" class="hidden" style="margin-top: 10px;">
+              <label class="req">Enter OTP from Email</label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="emailOtp" inputmode="numeric" placeholder="6-digit OTP" maxlength="6" style="flex-grow: 1;">
+                <button type="button" id="verifyEmailOtpBtn" style="flex: 0 0 auto;">Verify OTP</button>
+              </div>
+              <div id="emailOtpErr" class="error hidden"></div>
+            </div>
+          </div>
+          <div><label class="req">Date of Birth</label><input type="date" id="dob" required></div>
+          <div><label>Age (years)</label><input type="text" id="age" readonly></div>
+          <div><label class="req">Location for Deputation</label><select id="location" required></select></div>
+          <div><label class="req">Qualification - Educational</label><input type="text" id="qualEducational" placeholder="e.g., B.Com, M.Com" required></div>
+          <div><label>Qualification - Professional</label><input type="text" id="qualProfessional" placeholder="e.g., CA, ICWA, etc."></div>
+          <div>
+            <label class="req">Parent Office</label>
+            <div class="search-select">
+              <select id="parentOffice" required></select>
+              <input type="text" class="ss-input" id="parentOffice_ss" placeholder="Search office...">
+              <div class="ss-dropdown" id="parentOffice_dd"></div>
+            </div>
+          </div>
+          <div>
+            <label class="req">Present Office</label>
+            <div class="search-select">
+              <select id="presentOffice" required></select>
+              <input type="text" class="ss-input" id="presentOffice_ss" placeholder="Search office...">
+              <div class="ss-dropdown" id="presentOffice_dd"></div>
+            </div>
+            <small class="muted">If not listed, choose "Other".</small>
+          </div>
+          <div id="presentOfficeOtherWrap" class="hidden">
+            <label class="req">Present Office (Other)</label>
+            <input type="text" id="presentOfficeOther" placeholder="Please specify">
+          </div>
+          <div>
+            <label class="req">SC/ST</label>
+            <div class="inline">
+              <label><input type="radio" name="scst" value="Yes" required> Yes</label>
+              <label><input type="radio" name="scst" value="No" required> No</label>
+            </div>
+          </div>
+          <div id="categoryWrap" class="hidden">
+            <label class="req">Category</label>
+            <select id="category">
+              <option value="">-- Select --</option>
+              <option value="SC">SC</option>
+              <option value="ST">ST</option>
+            </select>
+          </div>
+          <div><label class="req">Date of Entry into Govt Service</label><input type="date" id="entryGovt" required></div>
+          <div><label class="req">Date of Entry in IA&AD</label><input type="date" id="entryIAAD" required></div>
+        </div>
+      </fieldset>
+
+      <fieldset id="part2" class="hidden">
+        <legend id="part2Legend">Part 2</legend>
+        <div class="group">
+          <div>
+             <label class="req">Year of passing SOG Examination</label>
+             <select id="sogYear"></select>
+          </div>
+          <div id="dateAAOWrap"><label class="req">Date of promotion/appointment as AAO</label><input type="date" id="dateAAO"></div>
+          <div id="dateSAOWrap" class="hidden"><label class="req">Date of promotion/appointment as SAO</label><input type="date" id="dateSAO"></div>
+          <div class="span-2">
+            <label class="req">Departmental Examinations Passed</label>
+            <div id="examContainer"></div>
+            <button type="button" class="btn-secondary" id="addExam" style="margin-top:8px; font-size:12px;">+ Add Exam</button>
+            <div id="examErr" class="error hidden">Please add at least one exam.</div>
+          </div>
+          <div><label>As on Date</label><input type="date" id="asOnDate" readonly></div>
+          <div><label>Number of years completed in the grade</label><input type="text" id="yearsInGrade" readonly></div>
+          <div><label class="req">Present Pay Level</label><select id="payLevel"></select></div>
+          <div><label class="req">Pay Amount</label><input type="number" id="payAmount" min="0" max="999999"></div>
+          <div class="span-2">
+            <label class="req">Working experience and posts held</label>
+            <div id="expContainer"></div>
+            <button type="button" class="btn-secondary" id="addExp" style="margin-top:8px; font-size:12px;">+ Add Experience</button>
+          </div>
+          <div>
+            <label class="req">Merit</label><div class="inline"><label><input type="radio" name="merit" value="Yes"> Yes</label><label><input type="radio" name="merit" value="No"> No</label></div>
+            <div id="meritDetailsWrap" class="hidden"><label>Merit Details</label><textarea id="meritDetails" rows="3" maxlength="2000"></textarea></div>
+          </div>
+          <div>
+            <label class="req">Achievements</label><div class="inline"><label><input type="radio" name="achievements" value="Yes"> Yes</label><label><input type="radio" name="achievements" value="No"> No</label></div>
+            <div id="achievementsDetailsWrap" class="hidden"><label>Achievements Details</label><textarea id="achievementsDetails" rows="3" maxlength="2000"></textarea></div>
+          </div>
+          <div>
+            <label class="req">Other Info</label><div class="inline"><label><input type="radio" name="otherInfo" value="Yes"> Yes</label><label><input type="radio" name="otherInfo" value="No"> No</label></div>
+            <div id="otherInfoDetailsWrap" class="hidden"><label>Other Info Details</label><textarea id="otherInfoDetails" rows="3" maxlength="2000"></textarea></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Final: Uploads and Confirmation</legend>
+        <div class="group">
+          <div>
+            <label class="req">Passport Size Photo (≤ 100 KB)</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 6px;">
+              <input type="file" id="photo" accept="image/*" required style="flex: 1;">
+              <button type="button" onclick="document.getElementById('photo').click()" style="background: #6b7280; flex: 0 0 auto; padding: 8px 14px;">Browse</button>
+            </div>
+            <small class="muted">File name must be 'Photo'</small>
+            <div id="photoErr" class="error hidden">Please upload an image ≤ 100 KB.</div>
+          </div>
+          <div>
+            <label class="req">Signature (≤ 100 KB)</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 6px;">
+              <input type="file" id="signature" accept="image/*" required style="flex: 1;">
+              <button type="button" onclick="document.getElementById('signature').click()" style="background: #6b7280; flex: 0 0 auto; padding: 8px 14px;">Browse</button>
+            </div>
+            <small class="muted">File name must be 'Signature'</small>
+            <div id="signatureErr" class="error hidden">Please upload an image ≤ 100 KB.</div>
+          </div>
+          <div class="span-2">
+            <label><input type="checkbox" id="confirm" required> The information furnished above are correct to the best of my knowledge.</label>
+          </div>
+        </div>
+      </fieldset>
+
+      <div style="text-align:center; margin-top:20px;">
+        <button type="submit" id="submitBtn" disabled>Submit Application</button>
+        <div id="status"></div>
+      </div>
+    </form>
+  </div>
+
+  <div id="printView" class="hidden">
+    <div class="pv-banner no-print">
+      <div>
+        <h3 style="color:#15803d; margin:0 0 8px; font-weight:700;">Application Submitted Successfully! 🎉</h3>
+        <p style="margin:0; color:#0c4a6e;">Your application has been recorded. Please download or print this receipt.</p>
+      </div>
+      <div style="display:flex; gap:12px; justify-content:center;">
+        <a id="downloadPdfBtn" href="#" target="_blank" style="background:#10b981; color:#fff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700;">📄 Download PDF</a>
+        <button type="button" onclick="window.print()" style="background:#0284c7; color:#fff; padding:12px 24px; border:none; border-radius:8px; cursor:pointer;">🖨️ Print</button>
+      </div>
+    </div>
+    <div class="pv-header">
+       <div>
+         <h2>DEPUTATION APPLICATION FORM</h2>
+         <div class="pv-sub">SAO / AAO Cadre</div>
+       </div>
+       <div class="pv-photo-box">
+          <p style="margin:0 0 4px; font-size:10px;">Applicant Photo</p>
+          <img id="pv-photo" src="">
+       </div>
+    </div>
+    <div class="pv-meta-strip">
+       <span>Ref ID: <strong id="pv-ref" style="color:#000;"></strong></span>
+       <span>Date: <span id="pv-date" style="color:#000;"></span></span>
+    </div>
+    <div id="pv-content"></div>
+    <div class="pv-footer">
+      <div class="pv-sig-box">
+        <img id="pv-sig" src="">
+        <p>Signature</p>
+      </div>
+    </div>
+    <div style="text-align:center; font-size:11px; color:#9ca3af; margin-top:20px;">System Generated Receipt</div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // =========================================================================
+    // ⚙️ GOOGLE APPS SCRIPT WEB APP URL
+    // Replace with your deployed Web App URL (Execute as: Me, Access: Anyone)
+    // Example: "https://script.google.com/macros/s/AKfycb.../exec"
+    // =========================================================================
+    const APPS_SCRIPT_URL = "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+    // ── Universal google.script.run Polyfill for GitHub Pages / External Web ──
+    if (!window.google || !window.google.script || !window.google.script.run) {
+        window.google = window.google || {};
+        window.google.script = window.google.script || {};
+
+        class GasRunner {
+            constructor(successHandler = null, failureHandler = null) {
+                this._success = successHandler;
+                this._failure = failureHandler;
+            }
+
+            withSuccessHandler(fn) {
+                return new GasRunner(fn, this._failure);
+            }
+
+            withFailureHandler(fn) {
+                return new GasRunner(this._success, fn);
+            }
+
+            async _call(action, payload) {
+                if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("YOUR_APPS_SCRIPT_WEB_APP_URL_HERE")) {
+                    const err = new Error("⚠️ APPS_SCRIPT_URL configure nahi hai! Kripya index.html me deployed Apps Script URL dalein.");
+                    if (this._failure) this._failure(err);
+                    else alert(err.message);
+                    return;
+                }
+
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: action, payload: payload })
+                    });
+
+                    const res = await response.json();
+                    if (res.status === 'success') {
+                        if (this._success) this._success(res.data);
+                    } else {
+                        const err = new Error(res.message || 'Server error occurred');
+                        if (this._failure) this._failure(err);
+                    }
+                } catch (err) {
+                    if (this._failure) this._failure(err);
+                }
+            }
+
+            sendEmailOTP(email) {
+                return this._call('sendEmailOTP', email);
+            }
+
+            verifyEmailOTP(payload) {
+                return this._call('verifyEmailOTP', payload);
+            }
+
+            saveForm(payload) {
+                return this._call('saveForm', payload);
+            }
+        }
+
+        window.google.script.run = new GasRunner();
+    }
+
+    const STREAMS=['Accounts & Entitlement','CAG Headquarters','Civil Audit','Commercial','Defence Audit','Finance & Communication Audit','Overseas Audit','Railway Audit','Training'];
+    const LOCATIONS=['New Delhi'];
+    const OFFICES=['PAG (A&E), Andhra Pradesh','PAG (A&E), Arunachal Pradesh','PAG (A&E), Assam','PAG (A&E), Bihar','PAG (A&E), Haryana','PAG (A&E), Punjab & UT','PAG (A&E), Punjab at UT Chandigarh (Br)','PAG (A&E), Chhattisgarh','PAG (A&E), Gujarat at Ahmedabad (Br)','PAG (A&E), Gujarat','PAG (A&E), Himachal Pradesh','PAG (A&E), Jammu and Kashmir & Ladakh at Jammu (Br)','PAG (A&E), Jammu and Kashmir & Ladakh','PAG (A&E), Jharkhand','PAG (A&E), Karnataka','PAG (A&E), Kerala at Kottayam (RAP)','PAG (A&E), Kerala','PAG (A&E), Kerala at Kochi (Br)','PAG (A&E), Kerala at Kozhikode (RAP)','PAG (A&E), Kerala at Thrissur (Br)','PAG (A&E-I), Madhya Pradesh at Bhopal (Br)','PAG (A&E-I), Madhya Pradesh','PAG (A&E-II), Madhya Pradesh','PAG (A&E-II), Madhya Pradesh at Bhopal (Br)','PAG (A&E-I), Maharashtra','PAG (A&E)-II, Maharashtra','PAG (A&E), Manipur','PAG (A&E), Meghalaya','PAG (A&E), Mizoram','PAG (A&E), Nagaland','PAG (A&E), Odisha','PAG (A&E), Odisha at Puri (Br)','PAG (A&E), Rajasthan','PAG (A&E), Sikkim','PAG (A&E), Tamil Nadu','PAG (A&E), Telangana','PAG (A&E), Tripura','PAG (A&E-I), Uttar Pradesh','PAG (A&E-II), Uttar Pradesh','PAG (A&E-II), Uttar Pradesh at Lucknow (Br)','PAG (A&E), Uttarakhand','PAG (A&E), West Bengal at Kolkata (Br)','PAG (A&E), West Bengal','O/o Comptroller & Auditor General of India','DG of Audit (Central), Kolkata at Port Blair (Br)','PAG (Audit), Andhra Pradesh','PAG (Audit), Arunachal Pradesh','DG of Audit (Central), Kolkata at Guwahati (Br)','PAG (Audit), Assam','DG of Audit (Central), Lucknow at Patna (Br)','PAG (Audit), Bihar','PAG (Audit), Bihar LAD at Patna (Br)','DG of Audit (Central), Chandigarh','PAG (Audit), Haryana','PAG (Audit), Punjab','PAG (Audit), Chhattisgarh','DG of Audit (Central Expenditure), New Delhi','DG of Audit (Environment & Scientific Departments), New Delhi','DG of Audit (Industry & Corporate Affairs), New Delhi','DG of Audit (Central Receipt), New Delhi','PAG (Audit), Delhi','PAG (Audit), Goa','DG of Audit (Central), Ahmedabad','PAG (Audit-I), Gujarat','PAG (Audit-II), Gujarat','PAG (Audit), Himachal Pradesh','PAG (Audit), Jammu and Kashmir & Ladakh at Jammu (Br)','PAG (Audit), Jammu & Kashmir & Ladakh','DG of Audit (Central), Lucknow at Ranchi (Br)','PAG (Audit), Jharkhand','PAG (Audit), Jharkhand LAD at Ranchi (Br)','DG of Audit (Central), Bangalore','DG of Audit (Environment & Scientific Departments), New Delhi at Bengaluru (Br)','Center of Excellence in Digital Audit of Revenue (Br)','PAG (Audit-I), Karnataka','PAG (Audit-II), Karnataka','DG of Audit (Central), Chennai at Kochi (Br)','PAG (Audit-I), Kerala','PAG (Audit-II), Kerala','PAG (Audit-I), Kerala at Kochi (RAP)','PAG (Audit-I), Kerala at Kottayam (RAP)','PAG (Audit-I), Kerala at Kozhikode (RAP)','PAG (Audit-I), Kerala at Thrissur (Br)','PAG (Audit-II), Kerala at Thrissur (Br)','DG of Audit (Energy), New Delhi at Bhopal (Br)','DG of Audit (Central Receipt), New Delhi at Gwalior (Br)','PAG (Audit-II), Madhya Pradesh at Gwalior (RAP)','PAG (Audit-I), Madhya Pradesh','PAG (Audit-II), Madhya Pradesh','DG of Audit (Central), Mumbai','DG of Audit (Environment & Scientific Departments), New Delhi at Mumbai (Br)','PAG (Audit-I), Maharashtra','PAG (Audit-II), Maharashtra','PAG (Audit-II), Maharashtra at Mumbai (Br)','PAG (Audit-I), Maharashtra at Nagpur (Br)','PAG (Audit), Manipur','PAG (Audit), Meghalaya','PAG (Audit), Mizoram','PAG (Audit), Nagaland','DG of Audit (Central), Hyderabad at Bhubaneswar (Br)','PAG (Audit-I), Odisha','PAG (Audit-II), Odisha','PAG (Audit-II), Odisha at Puri (Br)','PAG (Audit-II), Tamil Nadu at Puducherry (Br)','DG of Audit (Central), Ahmedabad at Jaipur (Br)','PAG (Audit-I), Rajasthan','PAG (Audit-II), Rajasthan','PAG (Audit), Sikkim','DG of Audit (Central), Chennai','DG of Audit (Environment & Scientific Departments), New Delhi at Chennai (Br)','PAG (Audit-I), Tamil Nadu','PAG (Audit-II), Tamil Nadu & Puducherry','DG of Audit (Central), Hyderabad','PAG (Audit), Telangana','PAG (Audit), Tripura','DG of Audit (Central), Lucknow at Prayagraj (Br)','DG of Audit (Central), Lucknow','PAG (Audit-II), Uttar Pradesh at Prayagraj (Br)','PAG (Audit-I), Uttar Pradesh','PAG (Audit-II), Uttar Pradesh','PAG (Audit), Uttarakhand','DG of Audit (Central), Kolkata','DG of Audit (Environment & Scientific Departments), New Delhi At Kolkata (Br)','PAG (Audit-I), West Bengal','PAG (Audit-II), West Bengal','PAG (Audit-I), West Bengal LAD at Kolkata (Br)','iCAL, Rajkot','DG of Commercial Audit, Hyderabad at Visakhapatnam (Br)','DG of Audit (Agriculture, Food & Water resources), New Delhi at Chandigarh (Br)','DG of Audit (Steel), Ranchi at Bhilai (Br)','DG of Audit (Agriculture, Food & Water Resources), New Delhi','DG of Audit (Infrastructure), New Delhi','DG of Audit (Energy), New Delhi','DG of Audit (Agriculture, Food & Water resources), New Delhi at New Delhi (Br)','DG of Audit (Energy), New Delhi at New Delhi (Br)','DG of Audit, Railway-Commercial, New Delhi','DG of Audit (Steel), Ranchi','DG of Audit (Coal), Kolkata at Ranchi (Br)','Principal Director of Audit, Defence-Commercial, Bengaluru','DG of Audit (Shipping), Mumbai','DG of Audit (Agriculture, Food & Water resources), New Delhi at Mumbai (Br)','DG of Commercial Audit, Mumbai','DG of Commercial Audit, Mumbai at Mumbai (Br)','DG of Audit (Agriculture, Food & Water resources), New Delhi at Chennai (Br)','DG of Commercial Audit, Chennai','DG of Commercial Audit, Hyderabad','DG of Commercial Audit, Mumbai at New Delhi (Br)','DG of Audit (Steel), Ranchi at Durgapur (Br)','DG of Audit (Mines), Kolkata','DG of Audit (Coal), Kolkata','DG of Audit (Agriculture, Food & Water resources), New Delhi at Kolkata (Br)','DG of Audit (Mines), Kolkata at Kolkata (Br)','DG of Audit, Navy, New Delhi at Visakhapatnam (Br)','DG of Audit (Defence Services), New Delhi at Patna (Br)','DG of Audit (Defence Services), Chandigarh','DG of Audit, Navy, New Delhi','DG of Audit (Defence Services) Headquarters, New Delhi','DG of Audit (Air Force), New Delhi','DG of Audit (Defence Services) Headquarters, New Delhi at Delhi Cantt. (Br)','DG of Audit (Defence Services), Chandigarh at Jammu (Br)','DG of Audit, Air Force, New Delhi at Bengaluru (Br)','DG of Audit, Navy, New Delhi at Mumbai (Br) at Kochi (RAP)','DG of Audit, Ordnance Factory, Kolkata at Jabalpur (Br)','DG of Audit, Ordnance Factory, Kolkata at Ambajhari (Br)','DG of Audit, Ordnance factory, Kolkata at Kirkee (Br)','DG of Audit, Navy, New Delhi at Mumbai (Br)','DG of Audit (Defence Services), Pune','DG of Audit, Defence Services, Pune at Chennai (Br)','DG of Audit, Ordnance Factory, Kolkata at Chennai (Br)','DG of Audit (Defence Services), New Delhi at Prayagraj (Br)','DG of Audit, Ordnance Factory, Kolkata at Kanpur (Br)','DG of Audit (Defence Services), New Delhi at Meerut Cantt (Br)','DG of Audit (Air Force), New Delhi at Dehradun (Br)','DG of Audit (Defence Services), New Delhi at Kolkata (RAP)','DG of Audit (Ordnance factories), Kolkata','DG of Audit, Ordnance factory, Kolkata at Avadi (Br)','DG of Audit, Finance & Communication, New Delhi at Patna (Br)','DG of Audit, Finance & Communication, New Delhi','DG of Audit, Finance & Communication, New Delhi at Ahmedabad (Br)','DG of Audit, Finance & Communication, New Delhi at Bengaluru (Br)','DG of Audit, Finance & Communication, New Delhi at Thiruvananthapuram (Br)','DG of Audit, Finance & Communication, New Delhi at Bhopal (Br)','DG of Audit, Finance & Communication, New Delhi at Mumbai (Br)','DG of Audit, Finance & Communication, New Delhi at Nagpur (Br)','DG of Audit, Finance & Communication, New Delhi at Cuttack (Br)','DG of Audit, Finance & Communication, New Delhi at Kapurthala (Br)','DG of Audit, Finance & Communication, New Delhi at Jaipur (Br)','DG of Audit, Finance & Communication, New Delhi at Chennai (Br)','DG of Audit, Finance & Communication, New Delhi at Hyderabad (Br)','DG of Audit, Finance & Communication, New Delhi at Lucknow (Br)','DG of Audit, Finance & Communication, New Delhi at Kolkata (Br)','Director of ExternalAudit (Geneva)','DG of Audit, Kuala Lumpur','DG of Audit, London','Director of External Audit (Rome)','DG of Audit, Washington DC','DG of Audit, Nairobi','DG of Audit, Northeast Frontier Railway, Guwahati','DG of Audit, East Central Railway, Hajipur','DG of Audit, South East Central Railway, Bilaspur','DG of Audit, Northern Railway, New Delhi','DG of Audit, Western Railway, Mumbai at Ahmedabad (Br)','DG of Audit, South Western Railway, Hubli','DG of Audit, West Central Railway, Jabalpur','DG of Audit, Central Railway, Mumbai','DG of Audit, Western Railway, Mumbai','DG of Audit, East Coast Railway, Bhubaneswar','DG of Audit, North Western Railway, Jaipur','DG of Audit, Southern Railway, Chennai','DG of Audit, South Central Railway, Secunderabad','DG of Audit, North Central Railway, Prayagraj','DG of Audit, North Eastern Railway, Gorakhpur','DG of Audit, Railway Production Units & Metro Railway, Kolkata at Varanasi (Br)','DG of Audit, Railway Production Units & Metro Railway, Kolkata at Burdwan (Br)','DG of Audit, Eastern Railway, Kolkata','DG of Audit, South Eastern Railway, Kolkata','DG of Audit, Railway Production Units & Metro Railway, Kolkata','Regional Training Centre, Delhi','National Academy of Audit And Accounts','Regional Training Institute, Jammu','Regional Training Institute, Ranchi','Regional Training Centre, Bengaluru','Regional Training Institute, Mumbai','Regional Training Institute, Nagpur','Regional Training Institute, Shillong','International Centre For Environment Audit & Sustainable Development, Jaipur','Regional Training Institute, Jaipur','Regional Training Institute, Chennai','Regional Training Institute, Hyderabad','Regional Training Institute, Prayagraj','International Centre for Information Systems and Audit','Regional Training Institute, Kolkata','Other'];
+    const EXP_CATEGORIES=['Training','Administration','IT & Computer','GST','Direct Tax','Custom','Defence','Finance & Communication','Accounts & Entitlement','Autonomous Bodies','Local Bodies','Performance Audit','Compliance Audit','Civil Audit','Expenditure Audit','Commercial Audit','Parliamentary Committee','Railway Audit','Secretariat','Legal','Others'];
+    const EXAMS_LIST=['RAE','CPD-I','CPD-II','CPD-III','Incentive Examination','Other'];
+    const currentYear=new Date().getFullYear();
+    const YEAR_OPTIONS=Array.from({length:currentYear - 1949},(_,i)=>String(currentYear - i));
+
+    let isEmailVerified = false;
+    let otpTimer = null;
+
+    // ===== PROGRESS OVERLAY CONTROLS =====
+    const overlay = document.getElementById('savingOverlay');
+    const progressFill = document.getElementById('progressFill');
+    const progressPct = document.getElementById('progressPct');
+    const savingTitle = document.getElementById('savingTitle');
+    const savingSubtitle = document.getElementById('savingSubtitle');
+    const savingIcon = document.getElementById('savingIcon');
+    const spinIcon = document.getElementById('spinIcon');
+
+    const STEPS = [
+      { id: 'step1', dot: 'dot1', label: 'Validating form data' },
+      { id: 'step2', dot: 'dot2', label: 'Uploading documents & files' },
+      { id: 'step3', dot: 'dot3', label: 'Saving to database' },
+      { id: 'step4', dot: 'dot4', label: 'Generating PDF receipt' },
+    ];
+
+    let progressInterval = null;
+    let currentPct = 0;
+    let targetPct = 0;
+
+    function showProgress() {
+      currentPct = 0; targetPct = 0;
+      progressFill.style.width = '0%';
+      progressPct.textContent = '0%';
+      savingTitle.textContent = 'Saving your application…';
+      savingSubtitle.textContent = 'Please wait, do not close this tab';
+      savingIcon.className = 'saving-icon';
+      spinIcon.innerHTML = '<path d="M21 12a9 9 0 1 1-6.219-8.56"/>';
+      spinIcon.style.animation = '';
+      STEPS.forEach(s => {
+        document.getElementById(s.id).className = 'progress-step';
+        document.getElementById(s.dot).innerHTML = '';
+      });
+      overlay.classList.add('visible');
+    }
+
+    function hideProgress() {
+      if (progressInterval) clearInterval(progressInterval);
+      overlay.classList.remove('visible');
+    }
+
+    function setStep(index) {
+      // Mark previous steps done, current active
+      STEPS.forEach((s, i) => {
+        const el = document.getElementById(s.id);
+        const dot = document.getElementById(s.dot);
+        if (i < index) {
+          el.className = 'progress-step done';
+          dot.innerHTML = '✓';
+        } else if (i === index) {
+          el.className = 'progress-step active';
+          dot.innerHTML = '';
+        } else {
+          el.className = 'progress-step';
+          dot.innerHTML = '';
+        }
+      });
+    }
+
+    function animateTo(pct, duration = 600) {
+      targetPct = pct;
+      const start = currentPct;
+      const startTime = performance.now();
+      function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        currentPct = Math.round(start + (targetPct - start) * eased);
+        progressFill.style.width = currentPct + '%';
+        progressPct.textContent = currentPct + '%';
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function markSuccess() {
+      animateTo(100, 500);
+      setTimeout(() => {
+        STEPS.forEach((s, i) => {
+          const el = document.getElementById(s.id);
+          const dot = document.getElementById(s.dot);
+          el.className = 'progress-step done';
+          dot.innerHTML = '✓';
+        });
+        savingTitle.textContent = 'Saved Successfully! 🎉';
+        savingSubtitle.textContent = 'Redirecting to your receipt…';
+        savingIcon.className = 'saving-icon done-state';
+        spinIcon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+        spinIcon.style.animation = 'none';
+        progressFill.style.animation = 'none';
+        progressFill.style.background = '#10b981';
+      }, 550);
+      setTimeout(() => hideProgress(), 1800);
+    }
+
+    function markError() {
+      if (progressInterval) clearInterval(progressInterval);
+      savingTitle.textContent = 'Submission Failed';
+      savingSubtitle.textContent = 'Please try again.';
+      savingIcon.style.background = 'linear-gradient(135deg,#ef4444,#dc2626)';
+      savingIcon.style.animation = 'none';
+      progressFill.style.background = '#ef4444';
+      progressFill.style.animation = 'none';
+      setTimeout(() => hideProgress(), 2200);
+    }
+
+    // ===== END PROGRESS CONTROLS =====
+
+    document.addEventListener('DOMContentLoaded', () => {
+      function renderOptions(select,arr,withEmpty=true){select.innerHTML=withEmpty?'<option value="">-- Select --</option>':'';arr.forEach(v=>{const opt=document.createElement('option');opt.value=v;opt.textContent=v;select.appendChild(opt);});}
+      function yearsBetween(fromStr,toStr){if(!fromStr||!toStr)return '';const from=new Date(fromStr),to=new Date(toStr);let y=to.getFullYear()-from.getFullYear();const m=to.getMonth()-from.getMonth(),d=to.getDate()-from.getDate();if(m<0||(m===0&&d<0))y--;return y>=0?y:'';}
+      function setToday(id){const el=document.getElementById(id);const t=new Date();el.value=new Date(t.getTime()-(t.getTimezoneOffset()*60000)).toISOString().slice(0,10);}
+      function toBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const base64=String(reader.result).split(',')[1];resolve({name:file.name,mimeType:file.type||'application/octet-stream',content:base64});};reader.onerror=reject;reader.readAsDataURL(file);});}
+      function showToast(msg, type = 'success') {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.style.background = type === 'error' ? '#dc2626' : '#10b981';
+        t.style.boxShadow = type === 'error' ? '0 10px 30px rgba(220,38,38,0.3)' : '0 10px 30px rgba(16,185,129,0.3)';
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 4000);
+      }
+      function makeSearchableSelect(selectId){const select=document.getElementById(selectId);const input=document.getElementById(selectId+'_ss');const dd=document.getElementById(selectId+'_dd');const data=Array.from(select.options).filter(o=>o.value!=='').map(o=>({value:o.value,label:o.textContent}));function openDD(){dd.classList.add('open');renderList(input.value.trim());}function closeDD(){dd.classList.remove('open');}function renderList(filter){dd.innerHTML='';const list=!filter?data:data.filter(item=>item.label.toLowerCase().includes(filter.toLowerCase()));if(list.length===0){const empty=document.createElement('div');empty.className='ss-empty';empty.textContent='No match';dd.appendChild(empty);return;}list.forEach(item=>{const div=document.createElement('div');div.className='ss-option';div.textContent=item.label;div.dataset.value=item.value;div.addEventListener('mousedown',(e)=>{e.preventDefault();choose(item);});dd.appendChild(div);});}function choose(item){select.value=item.value;input.value=item.label;closeDD();select.dispatchEvent(new Event('change',{bubbles:true}));}input.addEventListener('focus',openDD);input.addEventListener('click',openDD);input.addEventListener('input',()=>{renderList(input.value.trim());});input.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeDD();});input.addEventListener('blur',()=>{setTimeout(()=>{const exact=data.find(d=>d.label.toLowerCase()===input.value.trim().toLowerCase());if(!exact){select.value='';input.value='';}else{select.value=exact.value;}closeDD();},150);});}
+      function validateFileInput(inputEl,errEl,requiredBaseName){const f=inputEl.files[0];if(!f){inputEl.setCustomValidity('Required');errEl.textContent='Required';errEl.classList.remove('hidden');return false;}const baseName=f.name.substring(0,f.name.lastIndexOf('.'))||f.name;if(baseName.toLowerCase()!==requiredBaseName.toLowerCase()){const msg=`Filename must be '${requiredBaseName}'`;inputEl.setCustomValidity(msg);errEl.textContent=msg;errEl.classList.remove('hidden');return false;}if(f.size>100*1024){const msg='Max 100 KB';inputEl.setCustomValidity(msg);errEl.textContent=msg;errEl.classList.remove('hidden');return false;}inputEl.setCustomValidity('');errEl.classList.add('hidden');return true;}
+
+      renderOptions(document.getElementById('stream'),STREAMS,true);
+      renderOptions(document.getElementById('location'),LOCATIONS,true);
+      renderOptions(document.getElementById('payLevel'),Array.from({length:12},(_,i)=>'Level '+(i+1)),true);
+      renderOptions(document.getElementById('sogYear'),YEAR_OPTIONS,true);
+      renderOptions(document.getElementById('parentOffice'),OFFICES);
+      renderOptions(document.getElementById('presentOffice'),OFFICES);
+      makeSearchableSelect('parentOffice');
+      makeSearchableSelect('presentOffice');
+      setToday('asOnDate');
+
+      function addRow(containerId, isExam=false){
+         const wrap=document.createElement('div');wrap.className='rowline';
+         const sel=document.createElement('select');
+         const opts = isExam ? EXAMS_LIST : EXP_CATEGORIES;
+         renderOptions(sel, opts, false);
+         sel.insertAdjacentHTML('afterbegin','<option value="">-- Select --</option>');
+         sel.style.flex = "1";
+         sel.className = 'dynamic-select';
+         let inp;
+         if(isExam) {
+             inp = document.createElement('select');
+             renderOptions(inp, YEAR_OPTIONS, true);
+             inp.style.flex = "1";
+             inp.className = 'exam-year';
+         } else {
+             inp=document.createElement('input'); inp.type='text'; inp.placeholder='Details';
+             inp.style.flex = "2";
+             inp.className = 'exp-detail';
+         }
+         let otherInp = null;
+         if(isExam) {
+             otherInp = document.createElement('input');
+             otherInp.type='text';
+             otherInp.placeholder='Specify Exam Name';
+             otherInp.className = 'exam-other hidden';
+             otherInp.style.flex = "1";
+             sel.addEventListener('change', function() {
+                 if(this.value === 'Other') { otherInp.classList.remove('hidden'); }
+                 else { otherInp.classList.add('hidden'); }
+                 const allSelects = document.querySelectorAll('#examContainer .dynamic-select');
+                 const currentVal = this.value;
+                 let count = 0;
+                 if(currentVal && currentVal !== 'Other') {
+                     allSelects.forEach(s => { if(s.value === currentVal) count++; });
+                     if(count > 1) { alert('You have already selected this exam.'); this.value = ''; otherInp.classList.add('hidden'); }
+                 }
+             });
+         }
+         const btn=document.createElement('button');btn.type='button';btn.className='remove';btn.textContent='X';
+         btn.onclick=()=>wrap.remove();
+         wrap.append(sel);
+         if(otherInp) wrap.append(otherInp);
+         wrap.append(inp, btn);
+         document.getElementById(containerId).appendChild(wrap);
+      }
+
+      document.getElementById('addExp').addEventListener('click',()=>addRow('expContainer',false));
+      document.getElementById('addExam').addEventListener('click',()=>addRow('examContainer',true));
+      addRow('expContainer');
+      addRow('examContainer', true);
+
+      document.getElementById('designation').addEventListener('change', function(){
+          const desig = this.value;
+          const part2 = document.getElementById('part2');
+          part2.classList.toggle('hidden', !desig);
+          document.getElementById('dateSAOWrap').classList.toggle('hidden', desig !== 'SAO');
+          document.getElementById('dateSAO').required = (desig === 'SAO');
+          document.querySelectorAll('#part2 input, #part2 select, #part2 textarea').forEach(el => {
+               if(!el.closest('.rowline')) el.required = !!desig;
+          });
+          if(desig !== 'SAO') document.getElementById('dateSAO').required = false;
+          document.getElementById('part2Legend').textContent = `Part 2: For ${desig} only`;
+          computeYearsInGrade();
+      });
+
+      function computeYearsInGrade(){
+        const asOn = document.getElementById('asOnDate').value;
+        const desig = document.getElementById('designation').value;
+        let promoDate = desig === 'SAO' ? document.getElementById('dateSAO').value : document.getElementById('dateAAO').value;
+        document.getElementById('yearsInGrade').value = yearsBetween(promoDate, asOn) || '';
+      }
+      document.getElementById('dateAAO').addEventListener('change', computeYearsInGrade);
+      document.getElementById('dateSAO').addEventListener('change', computeYearsInGrade);
+
+      document.getElementById('presentOffice').addEventListener('change', function(){
+         const isOther = this.value === 'Other';
+         document.getElementById('presentOfficeOtherWrap').classList.toggle('hidden', !isOther);
+         document.getElementById('presentOfficeOther').required = isOther;
+      });
+
+      document.querySelectorAll('input[name="scst"]').forEach(r => r.addEventListener('change', () => {
+        const show = document.querySelector('input[name="scst"]:checked')?.value === 'Yes';
+        document.getElementById('categoryWrap').classList.toggle('hidden', !show);
+        document.getElementById('category').required = show;
+      }));
+
+      document.getElementById('dob').addEventListener('change', function(){
+          document.getElementById('age').value = yearsBetween(this.value, document.getElementById('asOnDate').value);
+      });
+
+      const mobile=document.getElementById('mobile');
+      mobile.addEventListener('input', () => {
+         mobile.value = mobile.value.replace(/\D/g, '').slice(0, 10);
+         const ok = /^\d{10}$/.test(mobile.value);
+         document.getElementById('mobileErr').classList.toggle('hidden', ok);
+      });
+
+      ['merit','achievements','otherInfo'].forEach(name=>{document.querySelectorAll(`input[name="${name}"]`).forEach(radio=>{radio.addEventListener('change',()=>toggleDetails(name));});toggleDetails(name);});function toggleDetails(name){const show=document.querySelector(`input[name="${name}"]:checked`)?.value==='Yes';document.getElementById(`${name}DetailsWrap`).classList.toggle('hidden',!show);const el=document.getElementById(`${name}Details`);el.required=show;if(!show)el.value='';}
+
+      document.getElementById('photo').addEventListener('change',()=>validateFileInput(document.getElementById('photo'),document.getElementById('photoErr'),'Photo'));
+      document.getElementById('signature').addEventListener('change',()=>validateFileInput(document.getElementById('signature'),document.getElementById('signatureErr'),'Signature'));
+
+      const emailInput=document.getElementById('email');const emailErr=document.getElementById('emailErr');const sendEmailOtpBtn=document.getElementById('sendEmailOtpBtn');const verifyEmailOtpBtn=document.getElementById('verifyEmailOtpBtn');const emailOtpInput=document.getElementById('emailOtp');const emailOtpSection=document.getElementById('emailOtpSection');const emailStatus=document.getElementById('emailStatus');const emailOtpErr=document.getElementById('emailOtpErr');const submitBtn=document.getElementById('submitBtn');const confirmCheckbox=document.getElementById('confirm');
+      function stopOtpTimer() { if (otpTimer) { clearInterval(otpTimer); otpTimer = null; } }
+      function updateSubmitButtonState(){submitBtn.disabled=!(confirmCheckbox.checked&&isEmailVerified);}
+      confirmCheckbox.addEventListener('change',updateSubmitButtonState);
+      updateSubmitButtonState();
+
+      emailInput.addEventListener('input',()=>{ if(isEmailVerified){ isEmailVerified=false; stopOtpTimer(); emailStatus.innerHTML='<span style="color: #b91c1c;">Email changed. Verify again.</span>'; emailInput.readOnly=false; sendEmailOtpBtn.disabled=false; sendEmailOtpBtn.textContent='Send OTP'; emailOtpSection.classList.add('hidden'); updateSubmitButtonState(); } });
+      sendEmailOtpBtn.addEventListener('click',()=>{ const email=emailInput.value.trim(); if(!/^[^@]+@cag\.gov\.in$/i.test(email)){emailErr.textContent='Invalid @cag.gov.in email.';emailErr.classList.remove('hidden');return;} emailErr.classList.add('hidden'); stopOtpTimer(); sendEmailOtpBtn.disabled=true; sendEmailOtpBtn.textContent='Sending...'; emailStatus.textContent=''; google.script.run.withSuccessHandler(res=>{ emailStatus.textContent=res.message; emailOtpSection.classList.remove('hidden'); emailOtpInput.focus(); let countdown = 60; sendEmailOtpBtn.textContent = `Resend in ${countdown}s`; otpTimer = setInterval(() => { countdown--; if(countdown >= 0) sendEmailOtpBtn.textContent = `Resend in ${countdown}s`; else { stopOtpTimer(); sendEmailOtpBtn.textContent = 'Resend OTP'; sendEmailOtpBtn.disabled = false; } }, 1000); }).withFailureHandler(err=>{ emailStatus.innerHTML=`<span class="fail">${err.message}</span>`; sendEmailOtpBtn.disabled=false; sendEmailOtpBtn.textContent='Send OTP'; }).sendEmailOTP(email); });
+      verifyEmailOtpBtn.addEventListener('click',()=>{ const email=emailInput.value.trim(); const otp=emailOtpInput.value.trim(); if(otp.length!==6){emailOtpErr.textContent='OTP must be 6 digits.';emailOtpErr.classList.remove('hidden');return;} emailOtpErr.classList.add('hidden'); verifyEmailOtpBtn.disabled=true; verifyEmailOtpBtn.textContent='Verifying...'; google.script.run.withSuccessHandler(res=>{ verifyEmailOtpBtn.disabled=false; verifyEmailOtpBtn.textContent='Verify OTP'; if(res.verified){ isEmailVerified=true; stopOtpTimer(); emailStatus.innerHTML='✅ <strong style="color: #065f46;">Verified!</strong>'; emailOtpSection.classList.add('hidden'); emailInput.readOnly=true; sendEmailOtpBtn.style.display='none'; updateSubmitButtonState(); } else { isEmailVerified=false; emailOtpErr.textContent=res.message; emailOtpErr.classList.remove('hidden'); } }).withFailureHandler(err=>{ emailOtpErr.textContent=err.message; emailOtpErr.classList.remove('hidden'); verifyEmailOtpBtn.disabled=false; verifyEmailOtpBtn.textContent='Verify OTP'; }).verifyEmailOTP({email,otp}); });
+
+      const depForm = document.getElementById('depForm');
+      depForm.addEventListener('submit', async(e) => {
+          e.preventDefault();
+          if(!isEmailVerified){ document.getElementById('emailStatus').innerHTML='<span class="fail">Please verify email.</span>'; return; }
+          if(!depForm.checkValidity()){ depForm.reportValidity(); return; }
+
+          const yearsInGradeValue = parseFloat(document.getElementById('yearsInGrade').value);
+          const selectedDesig = document.getElementById('designation').value;
+          if (selectedDesig === 'AAO' && (isNaN(yearsInGradeValue) || yearsInGradeValue < 5)) {
+            showToast("Minimum 5 years of service in AAO grade is required to apply.", "error");
+            return;
+          }
+
+          const examRows = document.querySelectorAll('#examContainer .rowline');
+          const exams = [];
+          examRows.forEach(row => {
+               const nameSel = row.querySelector('.dynamic-select');
+               const yearSel = row.querySelector('.exam-year');
+               const otherInp = row.querySelector('.exam-other');
+               let examName = nameSel.value;
+               let examYear = yearSel.value;
+               if(examName === 'Other' && otherInp.value.trim()) examName = otherInp.value.trim();
+               if(examName && examYear) exams.push({ exam: examName, year: examYear });
+          });
+
+          const expRows = document.querySelectorAll('#expContainer .rowline');
+          const experience = [];
+          expRows.forEach(row => {
+               const catSel = row.querySelector('.dynamic-select');
+               const detInp = row.querySelector('.exp-detail');
+               if(catSel && catSel.value) experience.push({ category: catSel.value, details: detInp ? detInp.value.trim() : '' });
+          });
+
+          if(exams.length===0){ document.getElementById('examErr').classList.remove('hidden'); return; }
+          else { document.getElementById('examErr').classList.add('hidden'); }
+
+          stopOtpTimer();
+          const statusEl = document.getElementById('status'); statusEl.textContent = '';
+          submitBtn.disabled = true; submitBtn.textContent = 'Saving...';
+
+          // ---- SHOW PROGRESS OVERLAY ----
+          showProgress();
+
+          // Step 1: Validating
+          setStep(0); animateTo(15, 400);
+
+          let photo, signature;
+          try {
+            await new Promise(r => setTimeout(r, 500)); // small delay for UX
+            photo = await toBase64(document.getElementById('photo').files[0]);
+            signature = await toBase64(document.getElementById('signature').files[0]);
+          } catch(err) {
+            statusEl.textContent = 'File error.';
+            submitBtn.disabled = false; submitBtn.textContent = 'Submit Application';
+            markError();
+            return;
+          }
+
+          // Step 2: Uploading files
+          setStep(1); animateTo(40, 600);
+          await new Promise(r => setTimeout(r, 400));
+
+          const payload = {
+              name: document.getElementById('name').value,
+              designation: document.getElementById('designation').value,
+              stream: document.getElementById('stream').value,
+              gender: document.querySelector('input[name="gender"]:checked')?.value,
+              mobile: document.getElementById('mobile').value,
+              email: document.getElementById('email').value,
+              dob: document.getElementById('dob').value,
+              location: document.getElementById('location').value,
+              qualEducational: document.getElementById('qualEducational').value,
+              qualProfessional: document.getElementById('qualProfessional').value,
+              parentOffice: document.getElementById('parentOffice').value,
+              presentOffice: document.getElementById('presentOffice').value,
+              presentOfficeOther: document.getElementById('presentOfficeOther').value,
+              scst: document.querySelector('input[name="scst"]:checked')?.value,
+              category: document.getElementById('category').value,
+              entryGovt: document.getElementById('entryGovt').value,
+              entryIAAD: document.getElementById('entryIAAD').value,
+              sogYear: document.getElementById('sogYear').value,
+              dateAAO: document.getElementById('dateAAO').value,
+              dateSAO: document.getElementById('dateSAO').value,
+              asOnDate: document.getElementById('asOnDate').value,
+              payLevel: (document.getElementById('payLevel').value||'').replace('Level ',''),
+              payAmount: document.getElementById('payAmount').value,
+              exams, experience,
+              merit: document.querySelector('input[name="merit"]:checked')?.value,
+              meritDetails: document.getElementById('meritDetails').value,
+              achievements: document.querySelector('input[name="achievements"]:checked')?.value,
+              achievementsDetails: document.getElementById('achievementsDetails').value,
+              otherInfo: document.querySelector('input[name="otherInfo"]:checked')?.value,
+              otherInfoDetails: document.getElementById('otherInfoDetails').value,
+              photo, signature
+          };
+
+          // Step 3: Saving
+          setStep(2); animateTo(70, 600);
+
+          google.script.run.withSuccessHandler(res => {
+              submitBtn.disabled = false; submitBtn.textContent = 'Submit Application';
+              if(res.ok) {
+                  // Step 4: Generating PDF
+                  setStep(3); animateTo(90, 400);
+                  setTimeout(() => {
+                    markSuccess();
+                    setTimeout(() => showPrintView(payload, res.id, res.pdfUrl), 1850);
+                  }, 600);
+              } else {
+                  statusEl.textContent = 'Failed to save.';
+                  markError();
+              }
+          }).withFailureHandler(err => {
+              submitBtn.disabled = false; submitBtn.textContent = 'Submit Application';
+              statusEl.textContent = 'Error: ' + err.message;
+              markError();
+          }).saveForm(payload);
+      });
+    });
+
+    function showPrintView(d, refId, pdfUrl){
+        document.getElementById('formContainer').classList.add('hidden');
+        document.getElementById('printView').classList.remove('hidden');
+        const photoSrc = d.photo ? `data:${d.photo.mimeType};base64,${d.photo.content}` : '';
+        const sigSrc = d.signature ? `data:${d.signature.mimeType};base64,${d.signature.content}` : '';
+        document.getElementById('pv-ref').textContent = refId;
+        document.getElementById('pv-date').textContent = new Date().toLocaleString();
+        if(photoSrc) document.getElementById('pv-photo').src = photoSrc;
+        if(sigSrc) document.getElementById('pv-sig').src = sigSrc;
+        const row = (l, v) => `<div class="pv-row"><div class="pv-label">${l}</div><div class="pv-val">${v || '-'}</div></div>`;
+        let h = '<div class="pv-section"><div class="pv-sec-title">Part 1: Common Details</div>';
+        h += row('Name', d.name); h += row('Designation', d.designation); h += row('Stream', d.stream);
+        h += row('Gender', d.gender); h += row('Mobile', d.mobile); h += row('Email', d.email);
+        h += row('Date of Birth', d.dob); h += row('Age', document.getElementById('age').value);
+        h += row('Location', d.location); h += row('Qual. (Edu)', d.qualEducational);
+        h += row('Qual. (Prof)', d.qualProfessional); h += row('Parent Office', d.parentOffice);
+        h += row('Present Office', d.presentOffice==='Other'?d.presentOfficeOther:d.presentOffice);
+        h += row('SC/ST', d.scst);
+        if(d.scst==='Yes') h += row('Category', d.category);
+        h += row('Entry Govt', d.entryGovt); h += row('Entry IA&AD', d.entryIAAD);
+        h += '</div>';
+        if(d.designation){
+           h += `<div class="pv-section"><div class="pv-sec-title">Part 2: For ${d.designation} only</div>`;
+           h += row('SOG Year', d.sogYear);
+           const examList = d.exams.map(e=>`<li>${e.exam} (${e.year})</li>`).join('');
+           h += row('Dept Exams', `<ul style="margin:0; padding-left:15px; list-style-type: square;">${examList}</ul>`);
+           h += row('Date AAO', d.dateAAO);
+           if(d.designation==='SAO') h += row('Date SAO', d.dateSAO);
+           h += row('As On Date', d.asOnDate);
+           h += row('Years in Grade', document.getElementById('yearsInGrade').value);
+           h += row('Pay Level', 'Level '+d.payLevel); h += row('Pay Amount', d.payAmount);
+           let expTable = `<table style="width:100%; border-collapse: collapse; font-size: 11px; margin-top: 5px; border: 1px solid #e5e7eb; table-layout: fixed;"><thead><tr style="background:#f9fafb; color:#374151;"><th style="border:1px solid #e5e7eb; padding:8px; text-align:left; width: 35%;">Category</th><th style="border:1px solid #e5e7eb; padding:8px; text-align:left; width: 65%;">Details</th></tr></thead><tbody>`;
+           d.experience.forEach(e => { expTable += `<tr><td style="border:1px solid #e5e7eb; padding:8px; font-weight:600; vertical-align:top; width: 35%;">${e.category}</td><td style="border:1px solid #e5e7eb; padding:8px; vertical-align:top; width: 65%; word-wrap: break-word;">${e.details || '-'}</td></tr>`; });
+           expTable += '</tbody></table>';
+           h += `<div class="pv-row" style="flex-direction: column;"><div class="pv-label" style="width:100%; border-right:none; border-bottom:1px solid #f3f4f6;">Working Experience</div><div class="pv-val" style="width:100%; padding:10px;">${expTable}</div></div>`;
+           h += row('Merit', d.merit + (d.merit==='Yes'?'<br>'+d.meritDetails:''));
+           h += row('Achievements', d.achievements + (d.achievements==='Yes'?'<br>'+d.achievementsDetails:''));
+           h += row('Other Info', d.otherInfo + (d.otherInfo==='Yes'?'<br>'+d.otherInfoDetails:''));
+           h += '</div>';
+        }
+        h += `<div class="pv-section" style="padding: 15px; font-weight: 600; background:#f9fafb; border-color:#e5e7eb;"><input type="checkbox" checked disabled style="margin-right: 8px;"> The information furnished above are correct to the best of my knowledge.</div><div style="border-bottom: 2px solid #e5e7eb; margin: 30px 0;"></div>`;
+        document.getElementById('pv-content').innerHTML = h;
+        const btn = document.getElementById('downloadPdfBtn');
+        if(pdfUrl){ btn.href=pdfUrl; btn.download=`Receipt_${refId}.pdf`; btn.classList.remove('hidden'); }
+        else btn.classList.add('hidden');
+        window.scrollTo(0,0);
+    }
+  </script>
+</body>
+</html>
