@@ -224,7 +224,10 @@
           <div><label class="req">Qualification - Educational</label><input type="text" id="qualEducational" placeholder="e.g., B.Com, M.Com, Graduate" required></div>
           <div><label>Qualification - Professional</label><input type="text" id="qualProfessional" placeholder="e.g., CA, ICWA, CISA, etc."></div>
           <div>
-            <label class="req">Parent Office</label>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin: 12px 0 6px;">
+              <label class="req" style="margin: 0;">Parent Office/Parent Cadre</label>
+              <a href="https://cagiaad-my.sharepoint.com/:b:/g/personal/ravikcons_cag_cag_gov_in/IQCuHyY6rRdGR61EEusjW__5ATRYmgtaOucBx5xdEf7FDbk?e=fdyaf4" target="_blank" rel="noopener noreferrer" style="font-size:12px; font-weight:700; color:#4f46e5; text-decoration:underline; display:inline-flex; align-items:center; gap:4px;" title="View Office Order (Circular 43 dt 21.11.2025)">📄 Office Order</a>
+            </div>
             <div class="search-select">
               <select id="parentOffice" required></select>
               <input type="text" class="ss-input" id="parentOffice_ss" placeholder="Search office...">
@@ -474,6 +477,7 @@
     const EXAMS_LIST=['RAE','CPD-I','CPD-II','CPD-III','Incentive Examination','Other'];
     const currentYear=new Date().getFullYear();
     const YEAR_OPTIONS=Array.from({length:currentYear - 1949},(_,i)=>String(currentYear - i));
+    const CPD_YEAR_OPTIONS=Array.from({length:currentYear - 2012},(_,i)=>String(currentYear - i)); // CPD exam year strictly from 2013 onwards
 
     let isEmailVerified = false;
     let emailVerifyToken = '';
@@ -488,6 +492,16 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+    }
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.style.background = type === 'error' ? '#dc2626' : '#10b981';
+      t.style.boxShadow = type === 'error' ? '0 10px 30px rgba(220,38,38,0.3)' : '0 10px 30px rgba(16,185,129,0.3)';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 4000);
     }
 
     // ===== PROGRESS OVERLAY CONTROLS =====
@@ -597,10 +611,6 @@
 
     // ===== RESET FORM FUNCTION FOR NEW ENTRY =====
     function resetFormForNewEntry() {
-      if (!confirm("Are you sure you want to fill a new application? Current view will be reset.")) {
-        return;
-      }
-
       const form = document.getElementById('depForm');
       form.reset();
 
@@ -664,6 +674,8 @@
       document.getElementById('printView').classList.add('hidden');
       document.getElementById('formContainer').classList.remove('hidden');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      showToast("Ready for new application! Form has been reset.", "success");
     }
 
     // ===== MAIN SCRIPT =====
@@ -697,14 +709,7 @@
           reader.readAsDataURL(file);
         });
       }
-      function showToast(msg, type = 'success') {
-        const t = document.getElementById('toast');
-        t.textContent = msg;
-        t.style.background = type === 'error' ? '#dc2626' : '#10b981';
-        t.style.boxShadow = type === 'error' ? '0 10px 30px rgba(220,38,38,0.3)' : '0 10px 30px rgba(16,185,129,0.3)';
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 4000);
-      }
+      // Global showToast is used
       function makeSearchableSelect(selectId){const select=document.getElementById(selectId);const input=document.getElementById(selectId+'_ss');const dd=document.getElementById(selectId+'_dd');const data=Array.from(select.options).filter(o=>o.value!=='').map(o=>({value:o.value,label:o.textContent}));function openDD(){dd.classList.add('open');renderList(input.value.trim());}function closeDD(){dd.classList.remove('open');}function renderList(filter){dd.innerHTML='';const list=!filter?data:data.filter(item=>item.label.toLowerCase().includes(filter.toLowerCase()));if(list.length===0){const empty=document.createElement('div');empty.className='ss-empty';empty.textContent='No match';dd.appendChild(empty);return;}list.forEach(item=>{const div=document.createElement('div');div.className='ss-option';div.textContent=item.label;div.dataset.value=item.value;div.addEventListener('mousedown',(e)=>{e.preventDefault();choose(item);});dd.appendChild(div);});}function choose(item){select.value=item.value;input.value=item.label;closeDD();select.dispatchEvent(new Event('change',{bubbles:true}));}input.addEventListener('focus',openDD);input.addEventListener('click',openDD);input.addEventListener('input',()=>{renderList(input.value.trim());});input.addEventListener('keydown',(e)=>{if(e.key==='Escape')closeDD();});input.addEventListener('blur',()=>{setTimeout(()=>{const exact=data.find(d=>d.label.toLowerCase()===input.value.trim().toLowerCase());if(!exact){select.value='';input.value='';}else{select.value=exact.value;}closeDD();},150);});}
       
       function validateFileInput(inputEl, errEl, requiredBaseName, previewWrapId, thumbId, nameId, sizeId) {
@@ -863,6 +868,20 @@
              otherInp.placeholder = 'Specify Exam Name';
              otherInp.className = 'exam-other hidden';
              otherInp.style.flex = "1";
+
+             function updateYearOptionsForExam() {
+                 const examVal = (sel.value || '').trim();
+                 const isCPD = ['CPD-I', 'CPD-II', 'CPD-III'].includes(examVal);
+                 const allowedYears = isCPD ? CPD_YEAR_OPTIONS : YEAR_OPTIONS;
+                 const prevYear = inp.value;
+                 renderOptions(inp, allowedYears, true);
+                 if (prevYear && allowedYears.includes(prevYear)) {
+                     inp.value = prevYear;
+                 } else {
+                     inp.value = '';
+                 }
+             }
+
              sel.addEventListener('change', function() {
                  if (this.value === 'Other') {
                      otherInp.classList.remove('hidden');
@@ -872,6 +891,7 @@
                      otherInp.required = false;
                      otherInp.value = '';
                  }
+                 updateYearOptionsForExam();
                  updateExamOptions();
              });
          }
